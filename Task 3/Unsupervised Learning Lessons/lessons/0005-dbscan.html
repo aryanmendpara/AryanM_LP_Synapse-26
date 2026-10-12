@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 5 — DBSCAN</title>
+<link rel="stylesheet" href="../assets/course.css">
+<script src="../assets/quiz.js" defer></script>
+<script src="../assets/course-nav.js" defer></script>
+</head>
+<body>
+<p class="lesson-eyebrow">Lesson 05 · Unsupervised Learning</p>
+<h1>DBSCAN — density-based clustering</h1>
+<p class="subtitle">The one skill: <em>tune eps and min_samples, and read the noise label.</em></p>
+
+<div class="objective">
+  <span class="label">By the end you can</span>
+  Explain core / border / noise points, choose <code>eps</code> and <code>min_samples</code>, fit DBSCAN and count outliers, and say when to prefer it over K-Means. Fills your notebook's two DBSCAN cells.
+</div>
+
+<h2>The idea — follow the density</h2>
+<p>K-Means and hierarchical clustering ask "which centroid/tree is closest?". <strong>DBSCAN</strong> asks "is this region <em>dense</em>?". It grows clusters from dense seeds and leaves sparse points as <strong>noise</strong> — so it finds clusters of any shape and gives you an outlier detector for free.</p>
+
+<h2>Three kinds of point</h2>
+<p>Two parameters: <code>eps</code> (neighbourhood radius) and <code>min_samples</code> (how many neighbours count as dense).</p>
+<table>
+<thead><tr><th>Type</th><th>Definition</th></tr></thead>
+<tbody>
+<tr><td><strong>Core</strong></td><td>Has at least <code>min_samples</code> points within radius <code>eps</code> (including itself).</td></tr>
+<tr><td><strong>Border</strong></td><td>Within <code>eps</code> of a core point, but not itself core.</td></tr>
+<tr><td><strong>Noise</strong></td><td>Neither of the above → labelled <code>−1</code>.</td></tr>
+</tbody>
+</table>
+<p>Algorithm: pick an unvisited core point, start a cluster, repeatedly absorb every point <em>density-reachable</em> from it; when no core points remain in reach, start the next cluster from another unvisited core point.</p>
+
+<div class="callout">
+  <span class="label">The one-sentence version.</span> DBSCAN forms clusters by chaining together points that are densely packed, and marks everything too sparse to belong as noise.
+</div>
+
+<h2>Fitting it</h2>
+<pre><code>from sklearn.cluster import DBSCAN
+import numpy as np
+
+db = DBSCAN(eps=0.5, min_samples=5)
+labels = db.fit_predict(data_pca)
+
+print("clusters:", len(set(labels)) - (1 if -1 in labels else 0))
+print("noise points:", np.sum(labels == -1))   <span class="c-com"># the −1 label</span></code></pre>
+<p>Your notebook wraps this in an <code>interact</code> widget — fill the blanks so the sliders control <code>eps</code> and <code>min_samples</code>. The 3D version is the same function with <code>projection='3d'</code>.</p>
+
+<h2>Choosing the parameters</h2>
+<ul>
+<li><strong>Scale first.</strong> <code>eps</code> is an absolute distance, so unscaled features wreck it — standardize (as you already did).</li>
+<li><strong>min_samples</strong>: rule of thumb ≈ <code>2 × n_features</code>, larger for noisier data.</li>
+<li><strong>eps</strong>: use a <em>k-distance plot</em> — sort each point's distance to its <code>min_samples</code>-th nearest neighbour and look for the "knee"; set <code>eps</code> there.</li>
+</ul>
+
+<div class="callout warn">
+  <span class="label">When it struggles.</span> Clusters of <em>very different densities</em> (one <code>eps</code> can't fit all), and high-dimensional data where "density" stops being meaningful. It also can't label every point — noise is intentional.
+</div>
+
+<h2>Check yourself</h2>
+<p class="sidenote">Recall from memory first.</p>
+
+<div class="quiz" data-explain="A core point has at least min_samples neighbours inside its eps radius (counting itself).">
+  <p class="quiz-q">1. In DBSCAN, a core point has…</p>
+  <button class="quiz-opt" data-correct="false">the largest distance from the origin</button>
+  <button class="quiz-opt" data-correct="false">one cluster assigned by the model</button>
+  <button class="quiz-opt" data-correct="true">min_samples neighbours within its eps radius</button>
+  <button class="quiz-opt" data-correct="false">the smallest value among all features</button>
+  <p class="quiz-feedback" hidden></p>
+</div>
+
+<div class="quiz" data-explain="Noise points get the special label −1, which is how you find outliers.">
+  <p class="quiz-q">2. DBSCAN labels sparse outlier points as…</p>
+  <button class="quiz-opt" data-correct="true">noise, with the label minus one</button>
+  <button class="quiz-opt" data-correct="false">a brand new and separate cluster</button>
+  <button class="quiz-opt" data-correct="false">the centroid of the nearest cluster</button>
+  <button class="quiz-opt" data-correct="false">a border point of two clusters</button>
+  <p class="quiz-feedback" hidden></p>
+</div>
+
+<div class="quiz" data-explain="DBSCAN finds arbitrary-shaped clusters and identifies noise — K-Means does neither.">
+  <p class="quiz-q">3. Compared with K-Means, DBSCAN…</p>
+  <button class="quiz-opt" data-correct="false">runs much faster on big data</button>
+  <button class="quiz-opt" data-correct="false">needs you to supply the k</button>
+  <button class="quiz-opt" data-correct="false">assumes every cluster is perfectly round</button>
+  <button class="quiz-opt" data-correct="true">finds arbitrary shapes and flags noise</button>
+  <p class="quiz-feedback" hidden></p>
+</div>
+
+<div class="quiz" data-explain="DBSCAN's two knobs are the radius eps and the density threshold min_samples.">
+  <p class="quiz-q">4. The two DBSCAN hyperparameters are…</p>
+  <button class="quiz-opt" data-correct="false">k and the random state</button>
+  <button class="quiz-opt" data-correct="false">learning rate and its momentum</button>
+  <button class="quiz-opt" data-correct="true">the radius eps and min_samples</button>
+  <button class="quiz-opt" data-correct="false">n_components and the linkage rule</button>
+  <p class="quiz-feedback" hidden></p>
+</div>
+
+<h2>Do this in your notebook (6 min)</h2>
+<ol>
+<li>Complete the 2D DBSCAN cell: set <code>dbscan_labels = dbscan.fit_predict(...)</code>, plot, and wire the <code>interact</code> sliders (e.g. <code>eps=(0.1, 2.0, 0.1)</code>, <code>min_samples=(2, 20, 1)</code>).</li>
+<li>Write the 3D version yourself.</li>
+<li>Slide <code>eps</code> and watch noise points appear/disappear. Note a value that gives clean clusters with few outliers.</li>
+</ol>
+
+<div class="source">
+  <span class="label">Primary source</span>
+  <a href="https://www.analyticsvidhya.com/blog/2020/09/how-dbscan-clustering-works/">Analytics Vidhya — "How DBSCAN Clustering Works"</a> (linked in your notebook). API: <a href="https://scikit-learn.org/stable/modules/generated/sklearn.cluster.DBSCAN.html"><code>sklearn.cluster.DBSCAN</code></a>. Reference: <a href="../reference/unsupervised-map.html">the map</a>.
+</div>
+
+<div class="ask">
+  <strong>Ask anything —</strong> "how exactly is the k-distance knee found?", "why does it work in 2D but not 50D?", "border point shared by two clusters?" I'll elaborate on request.
+</div>
+
+<nav class="next">
+<a href="0004-cluster-evaluation.html">← Lesson 4: Evaluation</a>
+<a href="../reference/unsupervised-map.html">Map</a>
+<a href="../GLOSSARY.md">Glossary</a>
+</nav>
+</body>
+</html>

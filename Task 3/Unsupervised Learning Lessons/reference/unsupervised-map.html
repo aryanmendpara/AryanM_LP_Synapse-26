@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Unsupervised Learning — Map of the Task 3 Algorithms</title>
+<link rel="stylesheet" href="../assets/course.css">
+</head>
+<body>
+<p class="lesson-eyebrow">Reference · Synapse Task 3</p>
+<h1>Unsupervised Learning — the Map</h1>
+<p class="subtitle">One page to orient every algorithm in the Task 3 set. Print it, keep it beside the notebook.</p>
+
+<p>Unsupervised learning has <strong>no target variable</strong>. Every task here is some way of finding structure in <em>X alone</em>. Three families cover the whole Task&nbsp;3 set:</p>
+
+<table>
+<thead><tr><th>Family</th><th>Question it answers</th><th>Task 3 members</th></tr></thead>
+<tbody>
+<tr><td><strong>Clustering</strong></td><td>Which points belong together?</td><td>K-Means, Agglomerative, DBSCAN, Spectral</td></tr>
+<tr><td><strong>Dimensionality reduction</strong></td><td>What are the few axes that matter?</td><td>PCA</td></tr>
+<tr><td><strong>Association rules</strong></td><td>What tends to appear together?</td><td>Apriori / FP-Growth</td></tr>
+</tbody>
+</table>
+
+<h2>Clustering — pick by cluster <em>shape</em></h2>
+<table>
+<thead><tr><th>Algorithm</th><th>Idea</th><th>Needs k?</th><th>Good for</th><th>Fails when</th></tr></thead>
+<tbody>
+<tr><td><strong>K-Means</strong></td><td>Partition: assign each point to the nearest of <em>k</em> centroids, then move centroids; repeat.</td><td>Yes</td><td>Round, compact, similar-sized blobs.</td><td>Non-spherical shapes, outliers, unequal sizes.</td></tr>
+<tr><td><strong>Agglomerative</strong> (hierarchical)</td><td>Bottom-up: each point starts alone; repeatedly merge the two closest clusters. Output = dendrogram.</td><td>Cut later (or set k)</td><td>When you don't know k; nested structure.</td><td>Big data (O(n²)); one wrong merge is permanent.</td></tr>
+<tr><td><strong>DBSCAN</strong></td><td>Density: grow clusters from dense <em>core points</em>; sparse points become noise.</td><td>No</td><td>Arbitrary shapes, and finding outliers (<code>label −1</code>).</td><td>Density varies a lot; high dimensions.</td></tr>
+<tr><td><strong>Spectral</strong></td><td>Graph: connect similar points, cut the graph into pieces with few weak edges.</td><td>Yes</td><td>Rings, moons, connectivity-shaped clusters.</td><td>Large n (eigen-decomposition); badly-built graph.</td></tr>
+</tbody>
+</table>
+<p class="sidenote">K-Means and Agglomerative are both <em>distance-based</em> and give every point a cluster. DBSCAN and Spectral are the two that break the "round blob" assumption — Spectral via connectivity, DBSCAN via density.</p>
+
+<h2>Dimensionality reduction — PCA</h2>
+<p><strong>PCA</strong> rotates the feature space onto new orthogonal axes (<a href="../GLOSSARY.md">principal components</a>) ordered by how much <a href="../GLOSSARY.md">variance</a> they capture. Keep the first few, drop the rest. Use it to <em>visualise</em> high-dimensional data in 2D/3D and to <em>speed up</em> clustering. Always <a href="../GLOSSARY.md">standardize</a> first.</p>
+
+<h2>Association rules — market-basket style</h2>
+<p>Find "if A then B" patterns: <code>{bread, butter} → {milk}</code>. Measured by <strong>support</strong> (how often A∪B appears), <strong>confidence</strong> (how often B is present given A), and <strong>lift</strong> (how much more often than chance; &gt;1 = useful). <strong>Apriori</strong> prunes using the property <em>"if an itemset is rare, all its supersets are rare"</em>; <strong>FP-Growth</strong> is the faster tree-based alternative.</p>
+
+<h2>Evaluation — how to know a clustering is good</h2>
+<ul>
+<li><strong>Silhouette</strong> (−1…1): how much closer a point is to its own cluster than the next. Higher is better.</li>
+<li><strong>Davies–Bouldin</strong> (≥0): average similarity of each cluster to its most-similar neighbour. <em>Lower</em> is better.</li>
+<li><strong>Inertia / WCSS</strong>: sum of squared distances to centroids — the thing K-Means minimises and the elbow method plots.</li>
+</ul>
+
+<nav class="next">
+<a href="../lessons/0001-pca-explained-variance.html">→ Lesson 1: PCA &amp; explained variance</a>
+<a href="../GLOSSARY.md">→ Glossary</a>
+</nav>
+</body>
+</html>

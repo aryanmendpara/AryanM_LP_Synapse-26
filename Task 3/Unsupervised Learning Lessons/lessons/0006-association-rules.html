@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 6 — Association Rules</title>
+<link rel="stylesheet" href="../assets/course.css">
+<script src="../assets/quiz.js" defer></script>
+<script src="../assets/course-nav.js" defer></script>
+</head>
+<body>
+<p class="lesson-eyebrow">Lesson 06 · Unsupervised Learning</p>
+<h1>Association rules — support, confidence, lift</h1>
+<p class="subtitle">The one skill: <em>mine "if A then B" rules and read the three metrics correctly.</em></p>
+
+<div class="objective">
+  <span class="label">By the end you can</span>
+  Compute and interpret support, confidence and lift, explain the Apriori property, run the mlxtend pipeline, and name the algorithm family. This is <strong>Part 1 of your research doc</strong> — the concepts behind what you already wrote.
+</div>
+
+<h2>The task — find co-occurrence</h2>
+<p>Association-rule learning finds "if A, then B" patterns in <strong>transaction</strong> data: rows are baskets, cells are which items they contain. No labels, no target — only which items appear <em>together</em>. Classic example: <code>{bread, butter} → {milk}</code>.</p>
+
+<h2>The three metrics</h2>
+<table>
+<thead><tr><th>Metric</th><th>Formula</th><th>Reads as</th></tr></thead>
+<tbody>
+<tr><td><strong>Support</strong></td><td>count(A ∪ B) / total transactions</td><td>How common the itemset is overall.</td></tr>
+<tr><td><strong>Confidence</strong></td><td>support(A ∪ B) / support(A)</td><td>How often B is present when A is.</td></tr>
+<tr><td><strong>Lift</strong></td><td>confidence(A→B) / support(B)</td><td>How much more often than chance.</td></tr>
+</tbody>
+</table>
+<div class="callout">
+  <span class="label">Reading lift.</span> <strong>Lift &gt; 1</strong> = A and B co-occur more than chance (useful). <strong>= 1</strong> = independent. <strong>&lt; 1</strong> = they avoid each other. Confidence can be high just because B is common — lift is what corrects for that.
+</div>
+
+<h2>The two-step recipe (and why Apriori is fast)</h2>
+<ol>
+<li><strong>Find frequent itemsets</strong> — those with support above <code>min_support</code>. This is the expensive part: the number of possible itemsets grows exponentially.</li>
+<li><strong>Generate rules</strong> — keep those whose confidence (and lift) pass a threshold.</li>
+</ol>
+<p><strong>Apriori</strong> prunes step 1 using the <em>Apriori property</em> (downward closure):</p>
+<div class="callout">
+  <span class="label">Apriori property.</span> If an itemset is <em>infrequent</em>, then <strong>every superset of it is also infrequent</strong>. So once <code>{beer}</code> is too rare, you can discard <code>{beer, diapers}</code> without ever counting it.
+</div>
+
+<h3>The algorithm family</h3>
+<ul>
+<li><strong>Apriori</strong> — level-by-level candidate generation + pruning. Simple, but many passes over data.</li>
+<li><strong>FP-Growth</strong> — builds an FP-tree; no candidate generation; usually faster.</li>
+<li><strong>Eclat</strong> — vertical layout (item → list of transaction IDs); support by set intersection.</li>
+<li><strong>Maximal / closed itemsets</strong> — compact summaries; <strong>GSP / PrefixSpan</strong> — sequential order matters.</li>
+</ul>
+
+<h2>Python (mlxtend)</h2>
+<pre><code>from mlxtend.preprocessing import TransactionEncoder
+from mlxtend.frequent_patterns import apriori, association_rules
+import pandas as pd
+
+transactions = [['bread','butter','milk'], ['bread','milk'], ['beer','diapers']]
+te = TransactionEncoder()
+basket = pd.DataFrame(te.fit(transactions).transform(transactions),
+                      columns=te.columns_)
+
+freq = apriori(basket, min_support=0.01, use_colnames=True)
+rules = association_rules(freq, metric="lift", min_threshold=1.0)
+rules[['antecedents','consequents','support','confidence','lift']].head()</code></pre>
+<p>On the Online Retail data you'd build baskets per <code>InvoiceNo</code> (the invoice is the transaction, and <code>Description</code> is the item) — the same rows your notebook already cleaned.</p>
+
+<div class="callout warn">
+  <span class="label">Limitations.</span> Rules show <strong>co-occurrence, not causation</strong>. Low support thresholds explode into thousands of trivial rules; high thresholds miss rare gems. Lift + domain sense are how you filter.
+</div>
+
+<h2>Check yourself</h2>
+<p class="sidenote">Recall from memory first.</p>
+
+<div class="quiz" data-explain="Support is the fraction of all transactions that contain the itemset.">
+  <p class="quiz-q">1. Support of a rule measures…</p>
+  <button class="quiz-opt" data-correct="false">how often B follows from A</button>
+  <button class="quiz-opt" data-correct="true">how often the itemset appears overall</button>
+  <button class="quiz-opt" data-correct="false">how much it beats pure chance</button>
+  <button class="quiz-opt" data-correct="false">the number of items in it</button>
+  <p class="quiz-feedback" hidden></p>
+</div>
+
+<div class="quiz" data-explain="Confidence = support(A∪B) / support(A): P(B | A).">
+  <p class="quiz-q">2. Confidence tells you…</p>
+  <button class="quiz-opt" data-correct="true">how often B appears given A</button>
+  <button class="quiz-opt" data-correct="false">how often the itemset appears overall</button>
+  <button class="quiz-opt" data-correct="false">how much it beats plain chance</button>
+  <button class="quiz-opt" data-correct="false">how many transactions contain both items</button>
+  <p class="quiz-feedback" hidden></p>
+</div>
+
+<div class="quiz" data-explain="Lift > 1 means the pair co-occurs more often than if they were independent.">
+  <p class="quiz-q">3. Lift greater than one means…</p>
+  <button class="quiz-opt" data-correct="false">A and B are totally independent</button>
+  <button class="quiz-opt" data-correct="false">the rule is never worth using</button>
+  <button class="quiz-opt" data-correct="true">A and B co-occur above chance</button>
+  <button class="quiz-opt" data-correct="false">the itemset support is too low</button>
+  <p class="quiz-feedback" hidden></p>
+</div>
+
+<div class="quiz" data-explain="Downward closure: an infrequent set forces all its supersets to be infrequent too.">
+  <p class="quiz-q">4. The Apriori principle states that…</p>
+  <button class="quiz-opt" data-correct="true">a rare itemset has rare supersets</button>
+  <button class="quiz-opt" data-correct="false">every itemset is frequent by default</button>
+  <button class="quiz-opt" data-correct="false">the confidence equals support times lift</button>
+  <button class="quiz-opt" data-correct="false">lift is always above one here</button>
+  <p class="quiz-feedback" hidden></p>
+</div>
+
+<h2>Do this for your research doc (5 min)</h2>
+<ol>
+<li>Re-read your Part 1 against the metrics table — tick off support, confidence, lift, the Apriori property, and the algorithm family. Anything missing, add it.</li>
+<li>Optionally, run the mlxtend snippet on a sample of the Online Retail baskets and paste one real rule into the doc.</li>
+</ol>
+
+<div class="source">
+  <span class="label">Primary source</span>
+  <a href="https://www.vldb.org/conf/1994/P487.PDF">Agrawal &amp; Srikant (1994), "Fast Algorithms for Mining Association Rules"</a> — the original Apriori paper. Marker-friendly alternative: <a href="https://rasbt.github.io/mlxtend/user_guide/frequent_patterns/apriori/">mlxtend apriori docs</a>. Reference: <a href="../reference/unsupervised-map.html">the map</a>.
+</div>
+
+<div class="ask">
+  <strong>Ask anything —</strong> "why divide by support(B)?", "Apriori vs FP-Growth in one line?", "how do I turn baskets into a mlxtend frame?" I'll walk through it.
+</div>
+
+<nav class="next">
+<a href="0005-dbscan.html">← Lesson 5: DBSCAN</a>
+<a href="0007-spectral-clustering.html">Next: Spectral clustering →</a>
+</nav>
+</body>
+</html>

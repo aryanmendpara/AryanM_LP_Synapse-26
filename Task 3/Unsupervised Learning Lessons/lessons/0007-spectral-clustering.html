@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 7 — Spectral Clustering</title>
+<link rel="stylesheet" href="../assets/course.css">
+<script src="../assets/quiz.js" defer></script>
+<script src="../assets/course-nav.js" defer></script>
+</head>
+<body>
+<p class="lesson-eyebrow">Lesson 07 · Unsupervised Learning</p>
+<h1>Spectral clustering</h1>
+<p class="subtitle">The one skill: <em>explain why a graph-view clustering beats K-Means on rings and moons.</em></p>
+
+<div class="objective">
+  <span class="label">By the end you can</span>
+  Walk the five steps (graph → matrices → Laplacian → eigenvectors → K-Means), explain the eigengap, run it in scikit-learn, and state spectral vs K-Means. This is <strong>Part 2 of your research doc</strong>.
+</div>
+
+<h2>The idea — cluster by connectivity, not distance</h2>
+<p>K-Means assumes round, compact clusters. Two concentric rings defeat it — each ring's centroid sits in the middle, so K-Means cuts <em>across</em> both. <strong>Spectral clustering</strong> treats the data as a <strong>graph</strong>: points are nodes, similar points get edges. A good clustering <em>cuts the graph into pieces that few, weak edges cross</em>.</p>
+
+<div class="callout">
+  <span class="label">The one-sentence version.</span> Spectral clustering builds a similarity graph and cuts it so clusters stay internally well-connected, which lets it follow curved, non-round shapes that K-Means can't.
+</div>
+
+<h2>The five steps</h2>
+<ol>
+<li><strong>Build a similarity graph</strong> — typically a k-NN graph or an RBF (Gaussian) kernel <code>exp(−γ‖x−y‖²)</code>.</li>
+<li><strong>Form matrices</strong> — <code>W</code> the affinity (similarity) matrix; <code>D</code> the degree matrix (diagonal, row sums of <code>W</code>).</li>
+<li><strong>Graph Laplacian</strong> — <code>L = D − W</code>, or the normalized <code>L_sym = I − D^(−1/2) W D^(−1/2)</code>.</li>
+<li><strong>Eigenvectors</strong> — take the <code>k</code> eigenvectors of <code>L</code> with the <em>smallest</em> eigenvalues; each point becomes a row in a new <code>n × k</code> space.</li>
+<li><strong>Cluster</strong> — run <strong>K-Means on those rows</strong>.</li>
+</ol>
+
+<h3>Why it works</h3>
+<ul>
+<li>The graph-cut view is what we want but is NP-hard to solve exactly; the small eigenvectors of the Laplacian are a smooth, tractable approximation of the best cut.</li>
+<li>If the graph has <code>k</code> disconnected pieces, the Laplacian has exactly <code>k</code> eigenvalues equal to 0, and those eigenvectors point straight at the pieces.</li>
+<li><strong>Choosing k:</strong> find the <em>eigengap</em> — a big jump between consecutive sorted eigenvalues; k is the count before the jump.</li>
+<li><strong>Hidden dimensionality reduction:</strong> step 4 re-embeds the data so tangled, curved clusters become compact and easy for K-Means to separate.</li>
+</ul>
+
+<h2>Python</h2>
+<pre><code>from sklearn.datasets import make_circles
+from sklearn.cluster import SpectralClustering, KMeans
+
+X, _ = make_circles(n_samples=500, factor=0.3, noise=0.05, random_state=42)
+
+sc = SpectralClustering(n_clusters=2, affinity='nearest_neighbors',
+                        n_neighbors=10, random_state=42)
+sc_labels = sc.fit_predict(X)     <span class="c-com"># separates the two rings</span>
+
+km_labels = KMeans(n_clusters=2, random_state=42).fit_predict(X)
+<span class="c-com"># K-Means cuts each ring in half; spectral keeps the rings whole</span></code></pre>
+
+<h2>Spectral vs K-Means (your doc's table)</h2>
+<table>
+<thead><tr><th></th><th>K-Means</th><th>Spectral</th></tr></thead>
+<tbody>
+<tr><td>Cluster shape</td><td>Round, compact blobs</td><td>Arbitrary — rings, moons, connectivity</td></tr>
+<tr><td>Basis</td><td>Distance to a centroid</td><td>Graph connectivity / similarity</td></tr>
+<tr><td>Speed</td><td>Fast</td><td>Slow: eigen-decomposition of an n×n matrix</td></tr>
+<tr><td>Choosing k</td><td>Elbow / silhouette</td><td>Eigengap (either needs k)</td></tr>
+<tr><td>Sensitive to</td><td>Initial centroids, outliers</td><td>How the similarity graph is built</td></tr>
+</tbody>
+</table>
+<p><strong>Uses:</strong> image segmentation, community detection, document grouping, gene-expression clustering. <strong>Weakness:</strong> doesn't scale to very large data.</p>
+
+<h2>Check yourself</h2>
+<p class="sidenote">Recall from memory first.</p>
+
+<div class="quiz" data-explain="Points become nodes and similar points are joined by weighted edges.">
+  <p class="quiz-q">1. Spectral clustering treats the data as…</p>
+  <button class="quiz-opt" data-correct="false">a grid of equally spaced points</button>
+  <button class="quiz-opt" data-correct="false">a simple table of labelled rows</button>
+  <button class="quiz-opt" data-correct="true">a graph of nodes and edges</button>
+  <button class="quiz-opt" data-correct="false">a single very long sorted list</button>
+  <p class="quiz-feedback" hidden></p>
+</div>
+
+<div class="quiz" data-explain="The graph view follows connectivity, so rings and moons don't defeat it.">
+  <p class="quiz-q">2. Unlike K-Means, spectral clustering works well on…</p>
+  <button class="quiz-opt" data-correct="true">rings, moons, and other odd shapes</button>
+  <button class="quiz-opt" data-correct="false">perfectly round and compact dense blobs</button>
+  <button class="quiz-opt" data-correct="false">datasets with only one clear feature</button>
+  <button class="quiz-opt" data-correct="false">very large sparse datasets of millions</button>
+  <p class="quiz-feedback" hidden></p>
+</div>
+
+<div class="quiz" data-explain="L = D − W, so it needs both the affinity W and the degree D.">
+  <p class="quiz-q">3. The graph Laplacian is built from…</p>
+  <button class="quiz-opt" data-correct="false">the labels and their clusters</button>
+  <button class="quiz-opt" data-correct="false">the centroids and their distances</button>
+  <button class="quiz-opt" data-correct="true">the affinity and degree matrices</button>
+  <button class="quiz-opt" data-correct="false">the support and the confidence</button>
+  <p class="quiz-feedback" hidden></p>
+</div>
+
+<div class="quiz" data-explain="Step 5 is K-Means on the eigenvectors — the embedding then the clustering.">
+  <p class="quiz-q">4. After the eigenvector step, spectral clustering runs…</p>
+  <button class="quiz-opt" data-correct="false">a dendrogram on raw points</button>
+  <button class="quiz-opt" data-correct="true">K-Means on the new representation</button>
+  <button class="quiz-opt" data-correct="false">DBSCAN on the original data</button>
+  <button class="quiz-opt" data-correct="false">PCA again on the eigenvectors</button>
+  <p class="quiz-feedback" hidden></p>
+</div>
+
+<h2>Do this for your research doc (5 min)</h2>
+<ol>
+<li>Check Part 2 against the five steps and the vs-K-Means table — confirm your doc covers the eigengap and the graph-cut intuition.</li>
+<li>Optionally run the <code>make_circles</code> snippet and compare the two label arrays; note it in the doc.</li>
+</ol>
+
+<div class="source">
+  <span class="label">Primary source</span>
+  <a href="https://scikit-learn.org/stable/modules/clustering.html#spectral-clustering">scikit-learn — Spectral clustering</a> (with the rings demo). Deeper maths: <a href="https://hastie.su.domains/ElemStatLearn/">ESL §14.5</a>. Reference: <a href="../reference/unsupervised-map.html">the map</a>.
+</div>
+
+<div class="ask">
+  <strong>Ask anything —</strong> "what's a Laplacian intuitively?", "why eigenvectors?", "when would I actually deploy this?" I'll go as deep as you want.
+</div>
+
+<nav class="next">
+<a href="0006-association-rules.html">← Lesson 6: Association rules</a>
+<a href="../index.html">Course home</a>
+</nav>
+</body>
+</html>

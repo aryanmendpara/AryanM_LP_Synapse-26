@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 2 — K-Means &amp; the Elbow Method</title>
+<link rel="stylesheet" href="../assets/course.css">
+<script src="../assets/quiz.js" defer></script>
+<script src="../assets/course-nav.js" defer></script>
+</head>
+<body>
+<p class="lesson-eyebrow">Lesson 02 · Unsupervised Learning</p>
+<h1>K-Means &amp; the elbow method</h1>
+<p class="subtitle">The one skill: <em>explain K-Means in a paragraph, and pick k with confidence.</em></p>
+
+<div class="objective">
+  <span class="label">By the end you can</span>
+  Describe the assign-then-update loop, name exactly what K-Means minimises, use the elbow method to choose <code>k</code>, and know when K-Means is the wrong tool. Maps to your notebook's K-Means and elbow cells.
+</div>
+
+<h2>Where this sits</h2>
+<p>In <a href="0001-pca-explained-variance.html">Lesson 1</a> you reduced the customer data to <code>data_pca</code>. K-Means now runs <em>on that reduced data</em> to group customers. This is <strong>partitional</strong> clustering — every point gets exactly one cluster, no noise category (contrast <a href="../reference/unsupervised-map.html">DBSCAN</a>).</p>
+
+<h2>The algorithm — four steps, repeated</h2>
+<ol>
+<li><strong>Choose k</strong> — how many clusters you want.</li>
+<li><strong>Initialise</strong> — place k centroids (scikit-learn uses <em>k-means++</em> by default, which spreads the initial centroids out).</li>
+<li><strong>Assign</strong> — label every point with its nearest centroid.</li>
+<li><strong>Update</strong> — move each centroid to the mean of the points assigned to it.</li>
+</ol>
+<p>Repeat 3–4 until the assignments stop changing (convergence). Because a random start can land in a worse solution, scikit-learn runs the whole thing several times (<code>n_init</code>) and keeps the best — and <code>random_state</code> makes that repeatable.</p>
+
+<div class="callout">
+  <span class="label">The one-sentence version.</span> K-Means repeatedly assigns points to the nearest of k centroids and re-centres those centroids on their points, until nothing moves.
+</div>
+
+<h3>What it's actually minimising: inertia</h3>
+<p>K-Means is minimising <strong>inertia</strong> (a.k.a. WCSS — within-cluster sum of squares): the total squared distance from each point to its own centroid.</p>
+<pre><code>inertia = 0
+for each cluster c:
+    for each point x in c:
+        inertia += squared_distance(x, centroid_of_c)</code></pre>
+<p>In scikit-learn it's the <code>inertia_</code> attribute after fitting. Lower is "tighter" clusters — but <em>not</em> a fair way to compare different values of k, because inertia always drops as k grows (more centroids = closer fits). That's precisely why the elbow method exists.</p>
+
+<h2>Choosing k — the elbow method</h2>
+<p>The elbow method plots inertia against k and looks for the <em>bend</em>: the point after which adding another cluster barely reduces inertia.</p>
+<pre><code>scores = []
+for k in range(1, 11):
+    km = KMeans(n_clusters=k, random_state=42)
+    km.fit(data_pca)
+    scores.append(km.inertia_)
+
+plt.plot(range(1, 11), scores, marker='o')   <span class="c-com"># look for the bend</span>
+plt.xlabel('k'); plt.ylabel('Inertia'); plt.title('Elbow'); plt.show()</code></pre>
+<p>Your notebook uses Yellowbrick's <code>KElbowVisualizer</code> to draw the same curve. Either way, the elbow is a <em>heuristic</em>, not a law — read it together with silhouette (Lesson 4) before committing.</p>
+
+<h2>Fitting and reading the model</h2>
+<pre><code>km = KMeans(n_clusters=3, random_state=42)
+labels = km.fit_predict(data_pca)     <span class="c-com"># fit + return one label per row</span>
+km.cluster_centers_                    <span class="c-com"># (k, n_features) centroid coordinates</span>
+km.inertia_                            <span class="c-com"># the minimised WCSS</span></code></pre>
+
+<div class="callout warn">
+  <span class="label">When K-Means is the wrong tool.</span> It assumes clusters are <strong>round, similar-sized, and roughly equally dense</strong>. It breaks on rings/moons (use Spectral), varying density (use DBSCAN), and it lets outliers drag centroids around. You also must supply k.
+</div>
+
+<h2>Check yourself</h2>
+<p class="sidenote">Recall from memory first — the struggle is the point.</p>
+
+<div class="quiz" data-explain="It minimises inertia — the sum of squared distances from points to their centroid.">
+  <p class="quiz-q">1. K-Means clustering minimises…</p>
+  <button class="quiz-opt" data-correct="false">the number of clusters in data</button>
+  <button class="quiz-opt" data-correct="true">the sum of squared centroid distances</button>
+  <button class="quiz-opt" data-correct="false">the variance between the cluster labels</button>
+  <button class="quiz-opt" data-correct="false">the distance between any two centroids</button>
+  <p class="quiz-feedback" hidden></p>
+</div>
+
+<div class="quiz" data-explain="The elbow looks for where inertia stops dropping sharply, suggesting k.">
+  <p class="quiz-q">2. The elbow method helps you choose…</p>
+  <button class="quiz-opt" data-correct="false">which of the columns to drop</button>
+  <button class="quiz-opt" data-correct="false">the number of the principal components</button>
+  <button class="quiz-opt" data-correct="true">how many clusters k should be</button>
+  <button class="quiz-opt" data-correct="false">how deep the dendrogram should go</button>
+  <p class="quiz-feedback" hidden></p>
+</div>
+
+<div class="quiz" data-explain="K-Means assumes round, similar-sized, dense clusters and is thrown off by outliers.">
+  <p class="quiz-q">3. K-Means struggles when clusters are…</p>
+  <button class="quiz-opt" data-correct="true">odd shapes or very different sizes</button>
+  <button class="quiz-opt" data-correct="false">measured with only the numeric columns</button>
+  <button class="quiz-opt" data-correct="false">standardized before the model even runs</button>
+  <button class="quiz-opt" data-correct="false">stored inside a big pandas dataframe</button>
+  <p class="quiz-feedback" hidden></p>
+</div>
+
+<div class="quiz" data-explain="The random start is fixed so the same data gives the same clusters each run.">
+  <p class="quiz-q">4. Why set <code>random_state</code> in <code>KMeans</code>?</p>
+  <button class="quiz-opt" data-correct="false">to make the clusters more accurate</button>
+  <button class="quiz-opt" data-correct="true">so results repeat across different runs</button>
+  <button class="quiz-opt" data-correct="false">to remove outliers from the data</button>
+  <button class="quiz-opt" data-correct="false">to raise the number of clusters</button>
+  <p class="quiz-feedback" hidden></p>
+</div>
+
+<h2>Do this in your notebook (5 min)</h2>
+<ol>
+<li>Run the interactive 2D K-Means cell and slide <code>num_clusters</code> from 1→6. Watch the centroids settle.</li>
+<li>Run the elbow cell. Read off the bend — note down the k it suggests.</li>
+<li>Keep that k in mind; Lesson 3 (hierarchical) and Lesson 4 (silhouette) will test whether it holds up.</li>
+</ol>
+
+<div class="source">
+  <span class="label">Primary source</span>
+  <a href="https://www.youtube.com/watch?v=4b5d3muPQmA">StatQuest — "K-means clustering"</a> (the video linked in your notebook). For the API internals, see <a href="https://scikit-learn.org/stable/modules/clustering.html#k-means">scikit-learn — K-means</a>. Reference card: <a href="../reference/unsupervised-map.html">the map</a>.
+</div>
+
+<div class="ask">
+  <strong>Stuck on anything —</strong> k-means++ init, why inertia always falls, local minima, or "why square the distance?" — ask. I'll go as deep as you want, and it shapes the next lesson.
+</div>
+
+<nav class="next">
+<a href="0001-pca-explained-variance.html">← Lesson 1: PCA</a>
+<a href="../reference/unsupervised-map.html">Map</a>
+<a href="../GLOSSARY.md">Glossary</a>
+</nav>
+</body>
+</html>

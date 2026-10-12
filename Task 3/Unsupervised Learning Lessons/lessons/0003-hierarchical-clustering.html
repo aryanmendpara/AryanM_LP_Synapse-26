@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 3 — Hierarchical Clustering</title>
+<link rel="stylesheet" href="../assets/course.css">
+<script src="../assets/quiz.js" defer></script>
+<script src="../assets/course-nav.js" defer></script>
+</head>
+<body>
+<p class="lesson-eyebrow">Lesson 03 · Unsupervised Learning</p>
+<h1>Hierarchical clustering &amp; dendrograms</h1>
+<p class="subtitle">The one skill: <em>explain agglomerative clustering in your own words and read a dendrogram.</em></p>
+
+<div class="objective">
+  <span class="label">By the end you can</span>
+  Describe the bottom-up merging process, choose a <em>linkage</em>, plot and cut a dendrogram, and state the trade-offs vs K-Means. This fills your notebook's blank "explain agglomerative" cell and the dendrogram cell.
+</div>
+
+<h2>The idea — bottom-up merging</h2>
+<p><strong>Agglomerative</strong> clustering is the "bottom-up" branch of <em>hierarchical</em> clustering:</p>
+<ol>
+<li>Start with every point as its <strong>own cluster</strong>.</li>
+<li>Find the <strong>two closest clusters</strong> and <strong>merge</strong> them.</li>
+<li>Repeat until everything is one cluster.</li>
+</ol>
+<p>The whole merge history is stored as a tree called a <strong>dendrogram</strong>. Unlike K-Means, you don't have to commit to k up front — you build the tree, then decide where to <em>cut</em> it.</p>
+
+<div class="callout">
+  <span class="label">The one-sentence version.</span> Agglomerative clustering repeatedly merges the two closest clusters until one remains, leaving a tree you cut at the height that gives your clusters.
+</div>
+
+<h2>Linkage — how "closest" is defined</h2>
+<p>Linkage is the rule for measuring distance <em>between two clusters</em> (not between two points):</p>
+<table>
+<thead><tr><th>Linkage</th><th>Cluster distance =</th><th>Character</th></tr></thead>
+<tbody>
+<tr><td><code>ward</code> (default)</td><td>increase in total within-cluster variance from merging</td><td>Compact, even clusters — usually the best default.</td></tr>
+<tr><td><code>complete</code></td><td>distance between the <em>farthest</em> pair</td><td>Tight, equal-sized clusters.</td></tr>
+<tr><td><code>average</code></td><td>average distance over all pairs</td><td>Balanced compromise.</td></tr>
+<tr><td><code>single</code></td><td>distance between the <em>closest</em> pair</td><td>Can chain long, stringy clusters.</td></tr>
+</tbody>
+</table>
+
+<h2>Reading a dendrogram</h2>
+<p>The y-axis is the <strong>merge distance</strong>, x-axis the points/clusters. To choose k, cut the tree <strong>horizontally across the biggest vertical gaps</strong> — a tall gap means two clusters were far apart when merged, so that's a natural boundary. Your notebook uses SciPy:</p>
+<pre><code>from scipy.cluster.hierarchy import dendrogram, linkage
+
+Z = linkage(data_pca, method='ward')   <span class="c-com"># the merge history</span>
+dendrogram(Z)
+plt.xlabel('Samples'); plt.ylabel('Merge distance'); plt.show()</code></pre>
+
+<h2>Fitting the model (scikit-learn)</h2>
+<pre><code>from sklearn.cluster import AgglomerativeClustering
+
+agglo = AgglomerativeClustering(n_clusters=3, linkage='average')
+labels = agglo.fit_predict(data_pca)   <span class="c-com"># one label per row</span></code></pre>
+<p>Note: scikit-learn's version is <strong>deterministic</strong> — no <code>random_state</code>, no random init. Use <code>distance_threshold</code> instead of <code>n_clusters</code> if you want it to stop merging at a fixed height (then you must also pass <code>n_clusters=None</code>).</p>
+
+<div class="callout warn">
+  <span class="label">Cost.</span> Naively it's <strong>O(n²)</strong> in time and memory — it computes distances between clusters, so it doesn't scale to millions of rows like K-Means roughly does. Great for small/medium data and for <em>exploring</em> structure.
+</div>
+
+<h2>Check yourself</h2>
+<p class="sidenote">Recall from memory first — the struggle is the point.</p>
+
+<div class="quiz" data-explain="Agglomerative is bottom-up: it merges the closest pair repeatedly.">
+  <p class="quiz-q">1. Agglomerative clustering builds clusters…</p>
+  <button class="quiz-opt" data-correct="true">by merging the closest two clusters</button>
+  <button class="quiz-opt" data-correct="false">splitting the largest cluster each time</button>
+  <button class="quiz-opt" data-correct="false">by assigning points to nearest centroids</button>
+  <button class="quiz-opt" data-correct="false">by drawing a line through data</button>
+  <p class="quiz-feedback" hidden></p>
+</div>
+
+<div class="quiz" data-explain="Cut across the largest vertical gaps to pick the number of clusters.">
+  <p class="quiz-q">2. On a dendrogram, you choose clusters by…</p>
+  <button class="quiz-opt" data-correct="false">reading the leaf labels from left</button>
+  <button class="quiz-opt" data-correct="true">cutting the tree at big gaps</button>
+  <button class="quiz-opt" data-correct="false">counting up every branch in it</button>
+  <button class="quiz-opt" data-correct="false">taking the tallest branch as k</button>
+  <p class="quiz-feedback" hidden></p>
+</div>
+
+<div class="quiz" data-explain="Linkage defines the distance between two clusters (single, complete, average, ward).">
+  <p class="quiz-q">3. Linkage in hierarchical clustering defines…</p>
+  <button class="quiz-opt" data-correct="false">how many clusters you want back</button>
+  <button class="quiz-opt" data-correct="false">the number of rows in data</button>
+  <button class="quiz-opt" data-correct="true">how distance between clusters is measured</button>
+  <button class="quiz-opt" data-correct="false">the colour of each dendrogram branch</button>
+  <p class="quiz-feedback" hidden></p>
+</div>
+
+<div class="quiz" data-explain="You build the full tree first, so k is chosen later — unlike K-Means.">
+  <p class="quiz-q">4. A key advantage of hierarchical clustering is…</p>
+  <button class="quiz-opt" data-correct="false">it scales to millions of rows</button>
+  <button class="quiz-opt" data-correct="true">you need not pick k upfront</button>
+  <button class="quiz-opt" data-correct="false">it never merges the wrong points</button>
+  <button class="quiz-opt" data-correct="false">it finds all density-based odd anomalies</button>
+  <p class="quiz-feedback" hidden></p>
+</div>
+
+<h2>Do this in your notebook (5 min)</h2>
+<ol>
+<li>Fill the blank "Explain Agglomerative Clustering in your own words" cell — use the one-sentence version above plus one linkage detail.</li>
+<li>Run the dendrogram cell. Find the tallest gap and note the k it implies.</li>
+<li>Compare with the k the elbow method gave you in Lesson 2. Do they agree?</li>
+</ol>
+
+<div class="source">
+  <span class="label">Primary source</span>
+  <a href="https://www.youtube.com/watch?v=7cijrfUkQ3c">StatQuest — "Hierarchical Clustering"</a>. For the API: <a href="https://scikit-learn.org/stable/modules/clustering.html#hierarchical-clustering">scikit-learn — Hierarchical clustering</a> and <a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.dendrogram.html">SciPy <code>dendrogram</code></a>. Reference: <a href="../reference/unsupervised-map.html">the map</a>.
+</div>
+
+<div class="ask">
+  <strong>Ask anything —</strong> "why does ward behave differently?", "single vs complete linkage in practice?", "how is the tree stored?" I'll answer at your depth.
+</div>
+
+<nav class="next">
+<a href="0002-kmeans-elbow-method.html">← Lesson 2: K-Means</a>
+<a href="../reference/unsupervised-map.html">Map</a>
+<a href="../GLOSSARY.md">Glossary</a>
+</nav>
+</body>
+</html>

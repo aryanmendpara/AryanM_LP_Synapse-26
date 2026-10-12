@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 1 — PCA &amp; Explained Variance</title>
+<link rel="stylesheet" href="../assets/course.css">
+<script src="../assets/quiz.js" defer></script>
+<script src="../assets/course-nav.js" defer></script>
+</head>
+<body>
+<p class="lesson-eyebrow">Lesson 01 · Unsupervised Learning</p>
+<h1>PCA &amp; explained variance</h1>
+<p class="subtitle">The one skill: <em>explain PCA in a paragraph, and choose how many components to keep.</em></p>
+
+<div class="objective">
+  <span class="label">By the end you can</span>
+  Say what PCA actually does, why you standardize first, and how to justify <code>n_components=0.9</code> from the explained-variance plot. This fills the blank answer in your Task 3 notebook (the cell after the PCA reference links).
+</div>
+
+<h2>Why reduce dimensions at all?</h2>
+<p>Your customer dataset has many correlated features (balance, purchases, cash-advance, credit limit…). More features means: slower computation, harder visualisation, and the <em>curse of dimensionality</em> — in high dimensions, distances between points become so uniform that clustering degrades. PCA compresses the features while keeping most of the <em>signal</em>.</p>
+<p>Where it sits in the Task 3 set: see the <a href="../reference/unsupervised-map.html">map</a>. Note the order in the notebook — you reduce <em>first</em>, then cluster. That's deliberate.</p>
+
+<h2>What PCA does, mechanically</h2>
+<p>PCA finds new axes — <a href="../GLOSSARY.md">principal components</a> — by <strong>rotating</strong> the feature space so that:</p>
+<ol>
+<li><strong>PC1</strong> points along the direction of <em>maximum variance</em> in the data.</li>
+<li><strong>PC2</strong> points along the next-most-variance direction, <em>perpendicular</em> to PC1.</li>
+<li>…and so on. Each PC is a weighted blend of the original features.</li>
+</ol>
+<p>Then you keep the first few PCs and drop the rest. You aren't deleting columns — you're building <em>new</em> columns that happen to capture the spread efficiently.</p>
+
+<div class="callout">
+  <span class="label">The one-sentence version.</span> PCA re-describes your data using axes aligned with where it actually varies, so the first few axes carry most of the information.
+</div>
+
+<h3>Why you must standardize first</h3>
+<p>PCA maximises <strong>variance</strong>. Variance depends on units: a feature measured in thousands dwarfs one measured in single digits, so PCA would just follow the big-number feature. <code>StandardScaler</code> puts every feature on the same footing (mean 0, sd 1) so each one gets a fair say. Your notebook does this before <code>pca.fit</code> — that ordering is not optional.</p>
+
+<h3>Explained variance ratio — how many components to keep</h3>
+<p>Each PC captures a slice of the total variance. <code>pca.explained_variance_ratio_</code> gives that slice as a fraction per component; the <em>cumulative</em> sum tells you how much of the original data a given number of PCs retains.</p>
+<pre><code>pca = PCA(n_components=0.9, random_state=20)   <span class="c-com"># keep enough PCs to reach 90% variance</span>
+pca.fit(scaled_df)                              <span class="c-com"># learn the axes</span>
+data_pca = pca.transform(scaled_df)            <span class="c-com"># project data onto them</span>
+
+pca.explained_variance_ratio_                   <span class="c-com"># e.g. [.30 .18 .12 ...]</span>
+np.cumsum(pca.explained_variance_ratio_)        <span class="c-com"># [.30 .48 .60 ...] -> crosses .90 at the cut</span></code></pre>
+<p>Setting <code>n_components=0.9</code> tells scikit-learn: <em>keep adding components until 90% of the variance is explained</em>. That's why your transformed shape came out with 10 dimensions instead of the original feature count — the fit <em>chose</em> 10.</p>
+
+<div class="callout warn">
+  <span class="label">The trade-off to state in an exam.</span> Lower <code>n_components</code> = faster, less visual clutter, but you lose information (the discarded variance). High = faithful but you may keep noise and no longer benefit. Explained variance is the dial you use to choose.
+</div>
+
+<h2>Check yourself</h2>
+<p class="sidenote">Answer from memory before clicking — the effort is what makes it stick.</p>
+
+<div class="quiz" data-explain="PC1 is defined as the direction that maximises the variance of the projected data.">
+  <p class="quiz-q">1. The first principal component captures…</p>
+  <button class="quiz-opt" data-correct="false">the average of every original feature</button>
+  <button class="quiz-opt" data-correct="true">the direction of maximum data variance</button>
+  <button class="quiz-opt" data-correct="false">the feature with the largest numbers</button>
+  <button class="quiz-opt" data-correct="false">the label appearing most in data</button>
+  <p class="quiz-feedback" hidden></p>
+</div>
+
+<div class="quiz" data-explain="Because variance depends on units, unscaled big-valued features dominate PCA.">
+  <p class="quiz-q">2. Why standardize the features before running PCA?</p>
+  <button class="quiz-opt" data-correct="true">features cannot dominate through their units</button>
+  <button class="quiz-opt" data-correct="false">because PCA requires integer feature values</button>
+  <button class="quiz-opt" data-correct="false">because it removes every outlier automatically</button>
+  <button class="quiz-opt" data-correct="false">because PCA needs a labelled target</button>
+  <p class="quiz-feedback" hidden></p>
+</div>
+
+<div class="quiz" data-explain="0.9 is a variance target, not a count: keep components until 90% is explained.">
+  <p class="quiz-q">3. In scikit-learn, <code>PCA(n_components=0.9)</code> means…</p>
+  <button class="quiz-opt" data-correct="false">keep exactly nine of the components</button>
+  <button class="quiz-opt" data-correct="false">drop ninety percent of the components</button>
+  <button class="quiz-opt" data-correct="true">keep components reaching ninety percent variance</button>
+  <button class="quiz-opt" data-correct="false">keep ninety percent of every row</button>
+  <p class="quiz-feedback" hidden></p>
+</div>
+
+<div class="quiz" data-explain="Each component is a blend of all original features, so you can no longer point to one feature.">
+  <p class="quiz-q">4. PCA can hurt interpretability because…</p>
+  <button class="quiz-opt" data-correct="true">components blend together many original features</button>
+  <button class="quiz-opt" data-correct="false">it permanently deletes the original dataset</button>
+  <button class="quiz-opt" data-correct="false">it requires labels before fitting axes</button>
+  <button class="quiz-opt" data-correct="false">it always picks wrong cluster numbers</button>
+  <p class="quiz-feedback" hidden></p>
+</div>
+
+<h2>Do this in your notebook (5 min)</h2>
+<ol>
+<li>Fill the blank <code>Answer:</code> cell: two or three sentences on what PCA is and why reduce dimensions. Use the one-sentence version above as a seed, then add the standardize point.</li>
+<li>Run the cumulative-variance plot and read off the number of components where the curve crosses 0.9. Confirm it matches <code>data_pca.shape</code>.</li>
+<li>Keep the notebook open — the next lesson is K-Means, which runs <em>on top of</em> <code>data_pca</code>.</li>
+</ol>
+
+<div class="source">
+  <span class="label">Primary source</span>
+  <a href="https://www.youtube.com/watch?v=FgakZw6K1QQ">StatQuest — "Principal Component Analysis (PCA), Step-by-Step"</a>. Watch once before/after this lesson; it shows the variance-maximisation visually. For the reference card, see the <a href="../reference/unsupervised-map.html">map</a> and the <a href="../GLOSSARY.md">glossary</a>.
+</div>
+
+<div class="ask">
+  <strong>Your teacher is right here.</strong> Anything fuzzy — <em>"what's an eigenvector?"</em>, <em>"why orthogonal?"</em>, <em>"PCA vs feature selection?"</em> — just ask. I'll answer at whatever depth you need, and it steers the next lesson.
+</div>
+
+<nav class="next">
+<a href="../reference/unsupervised-map.html">← Map of all algorithms</a>
+<a href="../GLOSSARY.md">Glossary</a>
+</nav>
+</body>
+</html>

@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 4 — Evaluating Clusters</title>
+<link rel="stylesheet" href="../assets/course.css">
+<script src="../assets/quiz.js" defer></script>
+<script src="../assets/course-nav.js" defer></script>
+</head>
+<body>
+<p class="lesson-eyebrow">Lesson 04 · Unsupervised Learning</p>
+<h1>Evaluating clusters &amp; K-Means vs Agglomerative</h1>
+<p class="subtitle">The one skill: <em>justify a clustering without labels, using silhouette and friends.</em></p>
+
+<div class="objective">
+  <span class="label">By the end you can</span>
+  Explain the silhouette score, name two other metrics and their direction, use silhouette to choose k, and write the K-Means vs Agglomerative comparison. Fills notebook cells on silhouette and the reflection prompt.
+</div>
+
+<h2>The problem: there are no labels</h2>
+<p>In supervised learning you score against the truth. Here there is none, so we use <strong>internal</strong> metrics that reward two things:</p>
+<ul>
+<li><strong>Cohesion</strong> — points in a cluster are close to each other.</li>
+<li><strong>Separation</strong> — different clusters are far apart.</li>
+</ul>
+
+<h2>Silhouette score — the main one</h2>
+<p>For each point:</p>
+<ul>
+<li><code>a</code> = mean distance to the other points in <em>its own</em> cluster (cohesion).</li>
+<li><code>b</code> = mean distance to the points of the <em>nearest other</em> cluster (separation).</li>
+<li><code>s = (b − a) / max(a, b)</code> &nbsp;→&nbsp; ranges <strong>−1 to +1</strong>.</li>
+</ul>
+<p>Average <code>s</code> over all points. <strong>Higher is better</strong>: near +1 means points sit comfortably inside their cluster; near 0 means they're on a boundary; negative means they're probably in the wrong cluster.</p>
+<pre><code>from sklearn.metrics import silhouette_score
+
+score = silhouette_score(data_pca, labels)   <span class="c-com"># labels from any clustering</span>
+
+<span class="c-com"># use it to choose k:</span>
+for k in range(2, 8):
+    labels = KMeans(n_clusters=k, random_state=42).fit_predict(data_pca)
+    print(k, round(silhouette_score(data_pca, labels), 3))</code></pre>
+
+<h2>Two more metrics (know the direction)</h2>
+<table>
+<thead><tr><th>Metric</th><th>Range</th><th>Better when…</th><th>Call</th></tr></thead>
+<tbody>
+<tr><td><strong>Silhouette</strong></td><td>−1 … 1</td><td>higher</td><td><code>silhouette_score</code></td></tr>
+<tr><td><strong>Davies–Bouldin</strong></td><td>≥ 0</td><td><em>lower</em></td><td><code>davies_bouldin_score</code></td></tr>
+<tr><td><strong>Calinski–Harabasz</strong></td><td>≥ 0</td><td>higher</td><td><code>calinski_harabasz_score</code></td></tr>
+</tbody>
+</table>
+<div class="callout warn">
+  <span class="label">The exam trap.</span> Davies–Bouldin is the odd one out — <strong>lower is better</strong>. It measures the average similarity between each cluster and its most-similar neighbour.
+</div>
+
+<h2>K-Means vs Agglomerative (your reflection cell)</h2>
+<table>
+<thead><tr><th></th><th>K-Means</th><th>Agglomerative</th></tr></thead>
+<tbody>
+<tr><td>Type</td><td>Partitional (centroids)</td><td>Hierarchical (merges)</td></tr>
+<tr><td>k</td><td>Must supply up front</td><td>Chosen after, from the dendrogram</td></tr>
+<tr><td>Output</td><td>k flat clusters</td><td>A full tree + a cut</td></tr>
+<tr><td>Determinism</td><td>Random init (fix with <code>random_state</code>)</td><td>Deterministic</td></tr>
+<tr><td>Scaling</td><td>~linear, large data OK</td><td>O(n²) — small/medium only</td></tr>
+<tr><td>Cluster shape</td><td>Round, similar-size</td><td>Also favours compactness (esp. <code>ward</code>)</td></tr>
+</tbody>
+</table>
+<p><strong>Similarities:</strong> both are distance-based, both assign <em>every</em> point to exactly one cluster (no noise label), and both generally prefer compact, well-separated groups — which is why they can agree on clean blob-like data and disagree on ring/moon shapes.</p>
+
+<h2>Check yourself</h2>
+<p class="sidenote">Recall from memory first.</p>
+
+<div class="quiz" data-explain="Silhouette is bounded between −1 (misplaced) and +1 (well inside its cluster).">
+  <p class="quiz-q">1. The silhouette score ranges from…</p>
+  <button class="quiz-opt" data-correct="false">zero up to a hundred</button>
+  <button class="quiz-opt" data-correct="false">zero up to positive infinity</button>
+  <button class="quiz-opt" data-correct="true">minus one to plus one</button>
+  <button class="quiz-opt" data-correct="false">one down to zero only</button>
+  <p class="quiz-feedback" hidden></p>
+</div>
+
+<div class="quiz" data-explain="A high score means points are close to their own cluster and far from others.">
+  <p class="quiz-q">2. A high silhouette score means…</p>
+  <button class="quiz-opt" data-correct="true">points fit their own cluster well</button>
+  <button class="quiz-opt" data-correct="false">the dataset has very many clusters</button>
+  <button class="quiz-opt" data-correct="false">the model still needs more features</button>
+  <button class="quiz-opt" data-correct="false">clusters overlap with each other heavily</button>
+  <p class="quiz-feedback" hidden></p>
+</div>
+
+<div class="quiz" data-explain="Davies–Bouldin is the metric where lower is better.">
+  <p class="quiz-q">3. Davies–Bouldin: a lower value is…</p>
+  <button class="quiz-opt" data-correct="false">worse for the clustering fit</button>
+  <button class="quiz-opt" data-correct="false">totally unrelated to clustering quality</button>
+  <button class="quiz-opt" data-correct="false">the number of clusters chosen</button>
+  <button class="quiz-opt" data-correct="true">better for cluster separation quality</button>
+  <p class="quiz-feedback" hidden></p>
+</div>
+
+<div class="quiz" data-explain="Agglomerative builds the full tree, so k is decided after; K-Means needs k up front.">
+  <p class="quiz-q">4. Which is true of Agglomerative but not K-Means?</p>
+  <button class="quiz-opt" data-correct="false">it groups the points into clusters</button>
+  <button class="quiz-opt" data-correct="true">it needs no k in advance</button>
+  <button class="quiz-opt" data-correct="false">it needs well scaled numeric features</button>
+  <button class="quiz-opt" data-correct="false">it always returns quite round shapes</button>
+  <p class="quiz-feedback" hidden></p>
+</div>
+
+<h2>Do this in your notebook (6 min)</h2>
+<ol>
+<li>Fill the "Explain Silhouette score + 2 other metrics" cell using the table above.</li>
+<li>Loop silhouette over k = 2…7; does the best k match the elbow and the dendrogram?</li>
+<li>Fill the final reflection cell: K-Means vs Agglomerative — similarities, differences, insights.</li>
+</ol>
+
+<div class="source">
+  <span class="label">Primary source</span>
+  <a href="https://scikit-learn.org/stable/modules/clustering.html#clustering-performance-evaluation">scikit-learn — Clustering performance evaluation</a>. Also <a href="https://scikit-learn.org/stable/modules/generated/sklearn.metrics.silhouette_score.html"><code>silhouette_score</code></a>. Reference: <a href="../reference/unsupervised-map.html">the map</a>.
+</div>
+
+<div class="ask">
+  <strong>Ask anything —</strong> "can I average silhouette across k?", "why not accuracy?", "what does a negative score really tell me?" I'll go deeper on request.
+</div>
+
+<nav class="next">
+<a href="0003-hierarchical-clustering.html">← Lesson 3: Hierarchical</a>
+<a href="../reference/unsupervised-map.html">Map</a>
+<a href="../GLOSSARY.md">Glossary</a>
+</nav>
+</body>
+</html>
