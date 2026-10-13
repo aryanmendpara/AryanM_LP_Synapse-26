@@ -44,13 +44,14 @@ for k in range(2, 8):
 
 <h2>Two more metrics (know the direction)</h2>
 <table>
-<thead><tr><th>Metric</th><th>Range</th><th>Better when…</th><th>Call</th></tr></thead>
+<thead><tr><th>Metric</th><th>Measures</th><th>Range</th><th>Better when…</th><th>Call</th></tr></thead>
 <tbody>
-<tr><td><strong>Silhouette</strong></td><td>−1 … 1</td><td>higher</td><td><code>silhouette_score</code></td></tr>
-<tr><td><strong>Davies–Bouldin</strong></td><td>≥ 0</td><td><em>lower</em></td><td><code>davies_bouldin_score</code></td></tr>
-<tr><td><strong>Calinski–Harabasz</strong></td><td>≥ 0</td><td>higher</td><td><code>calinski_harabasz_score</code></td></tr>
+<tr><td><strong>Silhouette</strong></td><td>Closeness to own cluster vs the nearest other</td><td>−1 … 1</td><td>higher</td><td><code>silhouette_score</code></td></tr>
+<tr><td><strong>Davies–Bouldin</strong></td><td>Average cluster similarity to its closest neighbour</td><td>≥ 0</td><td><em>lower</em></td><td><code>davies_bouldin_score</code></td></tr>
+<tr><td><strong>Calinski–Harabasz</strong></td><td>Between-cluster to within-cluster dispersion ratio</td><td>≥ 0</td><td>higher</td><td><code>calinski_harabasz_score</code></td></tr>
 </tbody>
 </table>
+<p class="sidenote"><strong>Davies–Bouldin</strong> compares each cluster's spread to how far it sits from its most-similar cluster — small spread, big gaps = low score = good. <strong>Calinski–Harabasz</strong> is a variance ratio (between-cluster ÷ within-cluster, like an F-statistic) — big gaps, tight clusters = high score = good. Both are relative: only compare them <em>across the same dataset</em>.</p>
 <div class="callout warn">
   <span class="label">The exam trap.</span> Davies–Bouldin is the odd one out — <strong>lower is better</strong>. It measures the average similarity between each cluster and its most-similar neighbour.
 </div>

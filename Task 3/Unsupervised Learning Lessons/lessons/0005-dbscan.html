@@ -37,23 +37,70 @@
   <span class="label">The one-sentence version.</span> DBSCAN forms clusters by chaining together points that are densely packed, and marks everything too sparse to belong as noise.
 </div>
 
-<h2>Fitting it</h2>
+<h2>Fitting it — the core code</h2>
 <pre><code>from sklearn.cluster import DBSCAN
 import numpy as np
 
-db = DBSCAN(eps=0.5, min_samples=5)
-labels = db.fit_predict(data_pca)
+db = DBSCAN(eps=0.5, min_samples=5)   <span class="c-com"># the two knobs</span>
+labels = db.fit_predict(data_pca)     <span class="c-com"># one label per row; noise = -1</span>
 
-print("clusters:", len(set(labels)) - (1 if -1 in labels else 0))
-print("noise points:", np.sum(labels == -1))   <span class="c-com"># the −1 label</span></code></pre>
-<p>Your notebook wraps this in an <code>interact</code> widget — fill the blanks so the sliders control <code>eps</code> and <code>min_samples</code>. The 3D version is the same function with <code>projection='3d'</code>.</p>
+n_clusters = len(set(labels)) - (1 if -1 in labels else 0)
+n_noise    = np.sum(labels == -1)
+print("clusters:", n_clusters, "| noise:", n_noise)</code></pre>
+<p class="sidenote">Syntax note: there is no <code>predict()</code> for new points — <code>fit_predict()</code> does both (DBSCAN isn't a reusable model). The core points are exposed as <code>db.core_sample_indices_</code>.</p>
 
 <h2>Choosing the parameters</h2>
 <ul>
 <li><strong>Scale first.</strong> <code>eps</code> is an absolute distance, so unscaled features wreck it — standardize (as you already did).</li>
 <li><strong>min_samples</strong>: rule of thumb ≈ <code>2 × n_features</code>, larger for noisier data.</li>
-<li><strong>eps</strong>: use a <em>k-distance plot</em> — sort each point's distance to its <code>min_samples</code>-th nearest neighbour and look for the "knee"; set <code>eps</code> there.</li>
+<li><strong>eps</strong>: read it off a <em>k-distance plot</em> (code below).</li>
 </ul>
+<pre><code>from sklearn.neighbors import NearestNeighbors
+
+k = 5                                  <span class="c-com"># set k = your min_samples</span>
+nbrs = NearestNeighbors(n_neighbors=k).fit(data_pca)
+distances, _ = nbrs.kneighbors(data_pca)   <span class="c-com"># (n, k)</span>
+k_dist = np.sort(distances[:, k - 1])      <span class="c-com"># each point's k-th neighbour distance</span>
+
+plt.plot(k_dist)                       <span class="c-com"># the "knee" of this curve ≈ a good eps</span>
+plt.xlabel('Points (sorted)'); plt.ylabel(f'{k}-th neighbour distance')
+plt.title('k-distance plot'); plt.show()</code></pre>
+
+<h2>The notebook's 2D cell — completed</h2>
+<pre><code>from ipywidgets import interact
+import matplotlib.pyplot as plt
+
+def dbscan_clustering(eps, min_samples):
+    dbscan = DBSCAN(eps=eps, min_samples=min_samples)
+    dbscan_labels = dbscan.fit_predict(data_pca)
+
+    plt.figure(figsize=(8, 6))
+    plt.scatter(data_pca[:, 0], data_pca[:, 1],
+                c=dbscan_labels, cmap='viridis', edgecolors='k', alpha=0.7)
+    plt.xlabel('Principal Component 1')
+    plt.ylabel('Principal Component 2')
+    plt.title(f'DBSCAN (eps={eps}, min_samples={min_samples})')
+    plt.show()
+
+interact(dbscan_clustering, eps=(0.1, 2.0, 0.1), min_samples=(2, 20, 1))</code></pre>
+
+<h2>The notebook's 3D cell — completed</h2>
+<pre><code>def dbscan_3d_clustering(eps, min_samples):
+    dbscan = DBSCAN(eps=eps, min_samples=min_samples)
+    labels_3d = dbscan.fit_predict(data_pca)
+
+    fig = plt.figure(figsize=(10, 8))
+    ax = fig.add_subplot(111, projection='3d')
+    ax.scatter(data_pca[:, 0], data_pca[:, 1], data_pca[:, 2],
+               c=labels_3d, cmap='viridis', edgecolors='k')
+    ax.set_xlabel('Principal Component 1')
+    ax.set_ylabel('Principal Component 2')
+    ax.set_zlabel('Principal Component 3')
+    ax.set_title(f'DBSCAN 3D (eps={eps}, min_samples={min_samples})')
+    plt.show()
+
+interact(dbscan_3d_clustering, eps=(0.1, 2.0, 0.1), min_samples=(2, 20, 1))</code></pre>
+<p class="sidenote">The only differences from the K-Means cells: DBSCAN takes <code>eps</code>/<code>min_samples</code> instead of <code>n_clusters</code>, and the −1 noise points show as their own colour.</p>
 
 <div class="callout warn">
   <span class="label">When it struggles.</span> Clusters of <em>very different densities</em> (one <code>eps</code> can't fit all), and high-dimensional data where "density" stops being meaningful. It also can't label every point — noise is intentional.
@@ -100,8 +147,8 @@ print("noise points:", np.sum(labels == -1))   <span class="c-com"># the −1 la
 
 <h2>Do this in your notebook (6 min)</h2>
 <ol>
-<li>Complete the 2D DBSCAN cell: set <code>dbscan_labels = dbscan.fit_predict(...)</code>, plot, and wire the <code>interact</code> sliders (e.g. <code>eps=(0.1, 2.0, 0.1)</code>, <code>min_samples=(2, 20, 1)</code>).</li>
-<li>Write the 3D version yourself.</li>
+<li>Cover the two completed cells above and write the 2D DBSCAN function from memory, then compare. Fix anything you missed.</li>
+<li>Do the same for the 3D function.</li>
 <li>Slide <code>eps</code> and watch noise points appear/disappear. Note a value that gives clean clusters with few outliers.</li>
 </ol>
 
