@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 1 — The Artificial Neuron &amp; the Perceptron</title>
+<link rel="stylesheet" href="../assets/course.css">
+<script src="../assets/quiz.js" defer></script>
+<script src="../assets/course-nav.js" defer></script>
+</head>
+<body>
+<p class="lesson-eyebrow">Lesson 01 · Deep Learning</p>
+<h1>The artificial neuron &amp; the perceptron</h1>
+<p class="subtitle">The one skill: <em>build a single neuron and teach it to compute OR.</em></p>
+
+<div class="objective">
+  <span class="label">By the end you can</span>
+  Explain what a neuron computes (<code>z = w·x + b</code>, then an activation), write the perceptron learning rule from memory, and train one to solve OR — filling the first blank cell in <code>Task_4A.ipynb</code> (the <code>PerceptronNetwork</code> class).
+</div>
+
+<h2>Intuition first</h2>
+<p>Forget brains for a second. A neuron is a <strong>tiny decision-maker</strong>, and it decides the same way a bouncer at a door does.</p>
+<p>Imagine a bouncer holding a short checklist. Each item on the list is a piece of evidence ("is wearing a wristband?", "is on the guest list?"). Not all evidence counts equally, so each item carries an <strong>importance score</strong>. The bouncer adds up the weighted evidence, adds a personal mood — how lenient they feel today — and if the total crosses a bar, the door opens. Otherwise it stays shut.</p>
+<p>That's a neuron, exactly:</p>
+<ul>
+  <li><strong>inputs</strong> → the evidence,</li>
+  <li><strong>weights</strong> → how much each piece of evidence matters (can be negative — evidence <em>against</em>),</li>
+  <li><strong>bias</strong> → the bouncer's baseline mood, independent of any evidence,</li>
+  <li><strong>activation function</strong> → the rule that turns "total score" into a yes/no decision.</li>
+</ul>
+<p>"Learning" is just the bouncer adjusting the importance scores after being told when they got a call wrong. Nothing more mystical than that.</p>
+
+<h3>So what exactly is a "perceptron"?</h3>
+<p>A <strong>perceptron</strong> is this neuron with one specific activation function: the <strong>step function</strong> — fire if the weighted sum crosses a threshold, otherwise don't. That is the entire definition: inputs, a weight per input, a bias (the threshold), and an output of 0 or 1. It is the simplest complete unit that can <em>learn</em>, and it's the thing you code in this lesson.</p>
+<p>The word <strong>neuron</strong> is the general term (the same computation, but the activation may be smooth — sigmoid, ReLU — as in later lessons); <strong>perceptron</strong> is specifically the step-activated one. People use the two loosely, but in this workspace "perceptron" always means the step-activated single neuron, and "neuron" is the general idea.</p>
+
+<div class="callout">
+  <span class="label">Perceptron in one line.</span> A perceptron = a single neuron whose activation is a step: <code>ŷ = 1 if (w·x + b) ≥ 0 else 0</code>.
+</div>
+
+<h3>So why "deep" learning?</h3>
+<p>In classical ML you hand-craft the features (you decide that "age" and "balance" matter). A neural network <em>learns its own features</em> by stacking neurons — early neurons spot simple patterns, later ones combine those into complex ones. On messy data (images, audio, text) that beats hand-crafted rules. The catch is the same as the perk: more layers to learn means more numbers to tune, and you need the machinery in this course to tune them (backprop, in Lesson 4).</p>
+
+<h2>The math, step by step</h2>
+<p>A neuron with two inputs does four things:</p>
+<ol>
+  <li><strong>Weighted sum.</strong> Multiply each input by its weight and add everything:
+    <br><code>z = w₁x₁ + w₂x₂ + … + wₙxₙ + b</code></li>
+  <li><strong>Write it as a dot product.</strong> That whole sum is just <code>z = w·x + b</code>. This is why NumPy matrices show up everywhere — a whole dataset of neurons is one matrix multiply.</li>
+  <li><strong>Activate.</strong> Push <code>z</code> through the activation function. For the perceptron that is the <strong>step function</strong>:
+    <br><code>ŷ = 1 if z ≥ 0 else 0</code></li>
+  <li><strong>Decide.</strong> <code>ŷ</code> is the output — fire (1) or don't (0).</li>
+</ol>
+
+<h3>The learning rule</h3>
+<p>After making a prediction <code>ŷ</code> for an example with true label <code>y</code>, compute the <strong>error</strong> and nudge every weight and the bias:</p>
+<pre><code>error = y − ŷ                    <span class="c-com"># true minus predicted</span>
+w ← w + η · error · x            <span class="c-com"># η = learning rate</span>
+b ← b + η · error</code></pre>
+<p>Read it as three cases, and it stops being scary:</p>
+<ul>
+  <li><strong>Correct</strong> (<code>error = 0</code>): nothing changes. Training is self-stabilising once every point is right.</li>
+  <li><strong>Missed a 1</strong> (<code>y=1, ŷ=0 → error=+1</code>): add <code>η·x</code> to the weights, pushing <code>z</code> up so the neuron is more likely to fire next time.</li>
+  <li><strong>Fired wrongly</strong> (<code>y=0, ŷ=1 → error=−1</code>): subtract <code>η·x</code>, pushing <code>z</code> down.</li>
+</ul>
+
+<div class="callout">
+  <span class="label">The one-sentence version.</span> A neuron is a weighted sum plus a bias passed through an activation; the perceptron learns by nudging its weights toward every example it got wrong.
+</div>
+
+<h3>Worked example — OR with the weights <em>given</em></h3>
+<p>Before training, just check one hand-picked guess: <code>w = [1, 1]</code>, <code>b = −0.5</code>. For each OR row, compute <code>z</code> and threshold at 0:</p>
+<table>
+  <tr><th>x₁</th><th>x₂</th><th>z = x₁ + x₂ − 0.5</th><th>ŷ (z ≥ 0)</th><th>OR truth</th></tr>
+  <tr><td>0</td><td>0</td><td>−0.5</td><td>0</td><td>0 ✓</td></tr>
+  <tr><td>0</td><td>1</td><td>0.5</td><td>1</td><td>1 ✓</td></tr>
+  <tr><td>1</td><td>0</td><td>0.5</td><td>1</td><td>1 ✓</td></tr>
+  <tr><td>1</td><td>1</td><td>1.5</td><td>1</td><td>1 ✓</td></tr>
+</table>
+<p>So <code>w=[1,1], b=−0.5</code> already solves OR. Training's job is to <em>find</em> such a setting starting from random weights.</p>
+
+<h3>The decision boundary</h3>
+<p>The line where <code>z = 0</code> is the <strong>decision boundary</strong> — the (only) line that separates fires from non-fires:</p>
+<p><code>x₁ + x₂ − 0.5 = 0</code>, i.e. <code>x₂ = 0.5 − x₁</code>.</p>
+<p>This one-line limit is the entire story of Lesson 3 (XOR). For now, just note: <strong>a single neuron can only ever draw a straight line.</strong></p>
+
+<h2>The code, line by line</h2>
+<p>This is the first blank cell in <code>Task_4A.ipynb</code>. Here it is filled in:</p>
+<pre><code>import numpy as np
+
+class PerceptronNetwork:
+    def __init__(self, input_size):
+        # one weight per input, plus one bias; small random starting values
+        self.weights = np.random.rand(input_size)   <span class="c-com"># shape (input_size,)</span>
+        self.bias = np.random.rand(1)               <span class="c-com"># shape (1,)</span>
+
+    def predict(self, x):
+        # the weighted sum plus bias, then the step activation
+        weighted_sum = np.dot(x, self.weights) + self.bias
+        return 1 if weighted_sum >= 0 else 0
+
+    def train(self, X, y, learning_rate, epochs):
+        for _ in range(epochs):
+            for i in range(len(X)):
+                prediction = self.predict(X[i])              <span class="c-com"># forward pass</span>
+                error = y[i] - prediction                    <span class="c-com"># true − predicted</span>
+                self.weights += learning_rate * error * X[i] <span class="c-com"># nudge weights</span>
+                self.bias += learning_rate * error           <span class="c-com"># nudge bias</span></code></pre>
+
+<p>What each line is doing:</p>
+<table>
+  <tr><th>Line</th><th>Meaning</th></tr>
+  <tr><td><code>np.random.rand(input_size)</code></td><td>Random numbers in <code>[0, 1)</code>, one weight per input. A random start breaks symmetry — we'll see in Lesson 6 why zeros are fatal for bigger networks.</td></tr>
+  <tr><td><code>np.dot(x, self.weights)</code></td><td>The dot product <code>w·x</code>. Requires <code>x</code> and <code>weights</code> to have the same length.</td></tr>
+  <tr><td><code>+ self.bias</code></td><td>Adds the mood. Shape <code>(1,)</code> broadcasts against the scalar sum.</td></tr>
+  <tr><td><code>1 if weighted_sum >= 0 else 0</code></td><td>The step activation. Note <code>>=</code>, so the boundary point itself counts as "fire".</td></tr>
+  <tr><td><code>error = y[i] - prediction</code></td><td>True minus predicted — order matters (flip it and the neuron learns backwards).</td></tr>
+  <tr><td><code>self.weights += learning_rate * error * X[i]</code></td><td>The rule: scale the input by error and η, then add. Zero error ⇒ zero change.</td></tr>
+  <tr><td><code>self.bias += learning_rate * error</code></td><td>Same idea, without an input to multiply by.</td></tr>
+</table>
+
+<p>Now drive it — the OR truth table, and a training loop with a fixed seed so the numbers below are reproducible:</p>
+<pre><code>np.random.seed(0)                                 <span class="c-com"># reproducible random start</span>
+X = np.array([[0, 0], [0, 1], [1, 0], [1, 1]])    <span class="c-com"># OR inputs</span>
+y = np.array([0, 1, 1, 1])                        <span class="c-com"># OR outputs</span>
+
+perceptron = PerceptronNetwork(input_size=2)
+perceptron.train(X, y, learning_rate=0.1, epochs=10)
+
+for x in X:
+    print(f"Input: {x}, Perceptron Prediction: {perceptron.predict(x)}")
+
+print("weights:", perceptron.weights)
+print("bias:", perceptron.bias)</code></pre>
+
+<p><strong>Expected output:</strong></p>
+<pre><code>Input: [0 0], Perceptron Prediction: 0
+Input: [0 1], Perceptron Prediction: 1
+Input: [1 0], Perceptron Prediction: 1
+Input: [1 1], Perceptron Prediction: 1
+weights: [0.5488135  0.71518937]
+bias: [-0.09723662]</code></pre>
+
+<div class="callout">
+  <span class="label">Read the output, don't just run it.</span> The four predictions <code>0 1 1 1</code> <em>are</em> the OR truth table — the neuron learned OR. Notice the weights barely moved from their random start: the first example (0,0) predicted 0 correctly, and the positive starting weights were already enough for the other three, so most updates were toward a smaller bias. Your exact numbers will differ without <code>np.random.seed(0)</code>, but the four predictions should not.
+</div>
+
+<h2>Common mistakes</h2>
+<ol>
+  <li><strong>Flipping the error sign.</strong> <code>error = prediction - y[i]</code> makes the neuron learn the <em>opposite</em> of what you want. Always true minus predicted.</li>
+  <li><strong>Forgetting the bias.</strong> Drop it and the boundary is forced through the origin (<code>w·x = 0</code>), which can't solve AND — you'll see this in Exercise 1.</li>
+  <li><strong>Shape mismatch in the dot product.</strong> <code>np.dot(x, self.weights)</code> wants two vectors of equal length. Passing a column vector <code>(n,1)</code> instead of <code>(n,)</code> gives a matrix, not a scalar.</li>
+  <li><strong>Expecting identical results every run.</strong> The random weights change each time, so one run may solve OR in one epoch and another in five. Seed it if you want reproducibility.</li>
+  <li><strong>Learning rate too big or too small.</strong> <code>0.1</code> is fine here; <code>1.0</code> can oscillate forever, <code>1e-6</code> is glacial.</li>
+  <li><strong>Concluding "the perceptron is broken" from XOR.</strong> It isn't — XOR simply isn't linearly separable. That's Lesson 3, and the fix is hidden layers, not more epochs.</li>
+</ol>
+
+<h2>Recap — five bullets</h2>
+<ul>
+  <li>A neuron computes a weighted sum plus a bias, then an activation: <code>z = w·x + b</code>, <code>ŷ = step(z)</code>.</li>
+  <li>The perceptron learns by nudging weights toward every wrong example: <code>w += η·(y − ŷ)·x</code>, <code>b += η·(y − ŷ)</code>.</li>
+  <li>Correct predictions give <code>error = 0</code>, so training automatically quietens down once all points are right.</li>
+  <li>A single neuron draws exactly one straight line; OR and AND are separable, XOR is not.</li>
+  <li>Random initialization means the run-to-run path differs — seed it when you need to compare outputs.</li>
+</ul>
+
+<h2>Practice (hints only — no solutions)</h2>
+<ol>
+  <li><strong>AND gate.</strong> Set <code>X</code> to the AND truth table (<code>y = [0,0,0,1]</code>) and train. You'll need a <em>negative</em> bias. Why? <em>Hint: for (1,1) to fire while (0,1) doesn't, the threshold must sit strictly between 1 and 2, and only the bias can move it.</em></li>
+  <li><strong>Write the boundary.</strong> Using your trained weights and bias, write the equation of the decision line. <em>Hint: set <code>w₁x₁ + w₂x₂ + b = 0</code> and solve for <code>x₂</code>. There are many valid lines — any that separates the 0s from the 1s.</em></li>
+  <li><strong>Add an accuracy method.</strong> Write <code>accuracy(self, X, y)</code> that returns the fraction of correct predictions. <em>Hint: loop over rows, count where <code>predict(X[i]) == y[i]</code>, divide by <code>len(X)</code>. Bonus: try it on XOR and watch it stall below 1.0.</em></li>
+</ol>
+
+<h2>Quiz</h2>
+<p class="sidenote">Answer from memory before clicking — the effort is what makes it stick. Full answer key at the bottom of the page.</p>
+
+<div class="quiz" data-explain="The bias adds a constant to the weighted sum, which slides the boundary line without changing its slope — so it need not pass through the origin.">
+  <p class="quiz-q">1. In a perceptron, the bias term mainly…</p>
+  <button class="quiz-opt" data-correct="true">shifts the decision boundary from the origin</button>
+  <button class="quiz-opt" data-correct="false">scales every input weight by one</button>
+  <button class="quiz-opt" data-correct="false">chooses which input is most important</button>
+  <button class="quiz-opt" data-correct="false">remembers the most recent prediction</button>
+  <p class="quiz-feedback" hidden></p>
+</div>
+
+<div class="quiz" data-explain="error = y − ŷ is zero exactly when the prediction already matches the label, so neither weights nor bias change.">
+  <p class="quiz-q">2. The perceptron learns nothing from an example when…</p>
+  <button class="quiz-opt" data-correct="false">the learning rate is larger than the bias</button>
+  <button class="quiz-opt" data-correct="true">the prediction already matches the label</button>
+  <button class="quiz-opt" data-correct="false">the input has two identical features</button>
+  <button class="quiz-opt" data-correct="false">the network has been trained too long</button>
+  <p class="quiz-feedback" hidden></p>
+</div>
+
+<div class="quiz" data-explain="One straight line cannot separate XOR's two 1-points from its two 0-points, no matter the weights.">
+  <p class="quiz-q">3. A single perceptron can never learn XOR because…</p>
+  <button class="quiz-opt" data-correct="false">XOR needs an output larger than one</button>
+  <button class="quiz-opt" data-correct="false">XOR inputs are not binary values</button>
+  <button class="quiz-opt" data-correct="true">one straight line cannot separate its points</button>
+  <button class="quiz-opt" data-correct="false">XOR needs a much larger learning rate</button>
+  <p class="quiz-feedback" hidden></p>
+</div>
+
+<div class="quiz" data-explain="The update scales the input by (y − ŷ): true minus predicted. Flipping the order teaches the neuron backwards.">
+  <p class="quiz-q">4. In the update rule, <code>error</code> is computed as…</p>
+  <button class="quiz-opt" data-correct="true">the true label minus the prediction</button>
+  <button class="quiz-opt" data-correct="false">the prediction minus the true label</button>
+  <button class="quiz-opt" data-correct="false">the prediction multiplied by the bias</button>
+  <button class="quiz-opt" data-correct="false">the absolute value of the weight sum</button>
+  <p class="quiz-feedback" hidden></p>
+</div>
+
+<div class="quiz" data-explain="Weights and bias start from random values, so the path training takes differs each run — sometimes one epoch is enough, sometimes more.">
+  <p class="quiz-q">5. Re-running the OR training from scratch changes…</p>
+  <button class="quiz-opt" data-correct="true">the random starting weights and bias</button>
+  <button class="quiz-opt" data-correct="false">the four rows of the OR truth table</button>
+  <button class="quiz-opt" data-correct="false">the number of inputs in the gate</button>
+  <button class="quiz-opt" data-correct="false">the learning rate chosen by Python</button>
+  <p class="quiz-feedback" hidden></p>
+</div>
+
+<div class="quiz" data-explain="z = w·x + b = 0 is the surface where the neuron is undecided; in 2-D that is a straight line, in general a hyperplane.">
+  <p class="quiz-q">6. The perceptron's decision boundary is…</p>
+  <button class="quiz-opt" data-correct="false">a circle centred on the bias value</button>
+  <button class="quiz-opt" data-correct="true">a straight line through input space</button>
+  <button class="quiz-opt" data-correct="false">the set of largest input values</button>
+  <button class="quiz-opt" data-correct="false">a curve shaped by the activation</button>
+  <p class="quiz-feedback" hidden></p>
+</div>
+
+<p><strong>Written questions.</strong> Work these on paper, then check the key at the bottom.</p>
+<ol start="7">
+  <li><em>(short answer)</em> Write the perceptron rule for updating the bias <code>b</code>.</li>
+  <li><em>(short answer)</em> In one sentence: why does training stop changing the weights once every point is classified correctly?</li>
+  <li><em>(predict the output)</em> Weights <code>[1, 1]</code>, bias <code>−0.5</code>. What does the perceptron output for input <code>(1, 0)</code>? Show the weighted sum first.</li>
+  <li><em>(predict the output)</em> Start with <code>w = [0, 0]</code>, <code>b = −0.5</code>. Take one training step on <code>x = (1, 1)</code>, <code>y = 1</code>, with <code>η = 0.5</code>. Give the new <code>w</code> and <code>b</code>.</li>
+</ol>
+
+<h2>Answer key</h2>
+<ol>
+  <li><strong>A</strong> — the bias shifts the boundary (slope stays); it does not scale weights or store anything.</li>
+  <li><strong>B</strong> — <code>error = y − ŷ = 0</code> whenever the prediction is already right.</li>
+  <li><strong>C</strong> — XOR is not linearly separable; no straight line splits its points.</li>
+  <li><strong>A</strong> — <code>error = y − ŷ</code>: true minus predicted.</li>
+  <li><strong>A</strong> — the random initial weights and bias change each run.</li>
+  <li><strong>B</strong> — <code>z = 0</code> is a line in 2-D (a hyperplane in general).</li>
+  <li><code>b ← b + η · (y − ŷ)</code>. No input term to multiply by, so it's just learning rate × error.</li>
+  <li>Because a correct prediction gives <code>error = 0</code>, and every update is proportional to <code>error</code>, so all updates become zero.</li>
+  <li><code>z = 1·1 + 1·0 + (−0.5) = 0.5</code>. Since <code>0.5 ≥ 0</code>, the output is <strong>1</strong>.</li>
+  <li>First predict: <code>z = 0·1 + 0·1 − 0.5 = −0.5 &lt; 0 → ŷ = 0</code>, so <code>error = 1 − 0 = 1</code>. Then <code>w ← [0,0] + 0.5·1·[1,1] = [0.5, 0.5]</code> and <code>b ← −0.5 + 0.5·1 = 0</code>. New values: <strong>w = [0.5, 0.5], b = 0</strong>.</li>
+</ol>
+
+<div class="source">
+  <span class="label">Primary source</span>
+  <a href="https://www.youtube.com/playlist?list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi">3Blue1Brown — "But what is a neural network?" (Neural Networks, ch. 1–2)</a>. Watch chapter 1 before or after this lesson for the visual version of the weighted sum. For the arithmetic, <a href="https://www.youtube.com/watch?v=vhJaUWGqQC8">StatQuest's perceptron video</a> is the gentlest walk-through. Terms live in the <a href="../GLOSSARY.md">glossary</a>.
+</div>
+
+<div class="ask">
+  <strong>Your teacher is right here.</strong> Anything fuzzy — <em>"why random init?"</em>, <em>"what does 'linearly separable' really mean?"</em>, <em>"why does the bias count as an input of 1?"</em> — just ask. I'll answer at whatever depth you need, and it steers the next lesson.
+</div>
+
+<nav class="next">
+<a href="../index.html">← Course home</a>
+<a href="../GLOSSARY.md">Glossary</a>
+<a href="0002-learning-rules-activations.html">2. Learning rules &amp; activation functions →</a>
+</nav>
+</body>
+</html>

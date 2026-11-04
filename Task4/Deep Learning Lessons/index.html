@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Deep Learning — Course Home</title>
+<link rel="stylesheet" href="assets/course.css">
+</head>
+<body>
+<p class="lesson-eyebrow">Synapse · Task 4</p>
+<h1>Deep Learning</h1>
+<p class="subtitle">A self-paced course on the Task 4 notebook set — the neuron, backprop by hand, Keras, CNNs, RNNs, GANs, attention.</p>
+
+<div class="objective">
+  <span class="label">Mission</span>
+  Deep mastery of the Task 4 deep-learning toolkit for exams and future ML work, applied through the two notebooks. See <a href="MISSION.md">MISSION.md</a>.
+</div>
+
+<p class="sidenote">18 lessons in 6 phases, foundations first. Each lesson: intuition → math → code → mistakes → recap → exercises → quiz.</p>
+
+<h2>Phase 0 · Foundations — one neuron, and how it learns</h2>
+<ul class="lesson-list">
+  <li><a href="lessons/0001-artificial-neuron-perceptron.html"><span class="num">01.</span> The artificial neuron &amp; the perceptron</a>
+      <span class="desc">Why deep learning, node / weight / bias / activation, and learning OR.</span></li>
+  <li><a href="lessons/0002-learning-rules-activations.html"><span class="num">02.</span> Learning rules &amp; activation functions</a>
+      <span class="desc">Hebbian vs delta rules; step, bipolar, sigmoid; input-range gotchas.</span></li>
+  <li><a href="lessons/0003-xor-linear-separability.html"><span class="num">03.</span> The XOR wall</a>
+      <span class="desc">One line can't split XOR — the reason hidden layers exist.</span></li>
+</ul>
+
+<h2>Phase 1 · From one neuron to a real network (from scratch)</h2>
+<ul class="lesson-list">
+  <li><a href="lessons/0004-one-neuron-backprop-addition.html"><span class="num">04.</span> Backprop: one neuron learns addition</a>
+      <span class="desc">Forward pass, loss, gradients, the update; why big inputs explode to <code>nan</code>.</span></li>
+  <li><a href="lessons/0005-nn-from-scratch-mnist.html"><span class="num">05.</span> A full network from scratch (MNIST)</a>
+      <span class="desc">Shapes, sigmoid, softmax, cross-entropy, one-hot; the magic <code>dL/dZ₃ = A₃ − target</code>.</span></li>
+  <li><a href="lessons/0006-debugging-training.html"><span class="num">06.</span> Debugging training</a>
+      <span class="desc">Zero init, learning rate too big / too small, reading a loss curve.</span></li>
+</ul>
+
+<h2>Phase 2 · Deep learning in the real world (Keras / TensorFlow)</h2>
+<ul class="lesson-list">
+  <li><a href="lessons/0007-keras-building-blocks-adult.html"><span class="num">07.</span> Keras building blocks (adult income)</a>
+      <span class="desc">Sequential, Dense, Input, compile / fit / evaluate / predict.</span></li>
+  <li><a href="lessons/0008-judging-a-model-honestly.html"><span class="num">08.</span> Judging a model honestly</a>
+      <span class="desc">Accuracy vs class imbalance, the "always predict ≤50K" baseline, precision &amp; recall.</span></li>
+  <li><a href="lessons/0009-tensors-autodiff.html"><span class="num">09.</span> Tensors &amp; automatic differentiation</a>
+      <span class="desc">What a tensor is, the computational graph, and why not just NumPy.</span></li>
+  <li><a href="lessons/0010-what-hidden-layers-learn.html"><span class="num">10.</span> What hidden layers learn</a>
+      <span class="desc">Feature learning, the Playground spiral demo, curved boundaries.</span></li>
+</ul>
+
+<h2>Phase 3 · Seeing — Convolutional Neural Networks</h2>
+<ul class="lesson-list">
+  <li><a href="lessons/0011-convolution-and-cnn.html"><span class="num">11.</span> Convolution &amp; the CNN</a>
+      <span class="desc">Filters, feature maps, pooling, weight sharing; why CNN ≫ ANN for images.</span></li>
+  <li><a href="lessons/0012-training-cnn-overfitting.html"><span class="num">12.</span> Training a CNN &amp; overfitting</a>
+      <span class="desc">CIFAR-10, the train-vs-val gap, dropout / augmentation / early stopping.</span></li>
+  <li><a href="lessons/0013-transfer-learning.html"><span class="num">13.</span> Transfer learning</a>
+      <span class="desc">Pretrained MobileNetV2, frozen base, new head, fine-tuning, tiny learning rate.</span></li>
+</ul>
+
+<h2>Phase 4 · Memory — Recurrent Neural Networks</h2>
+<ul class="lesson-list">
+  <li><a href="lessons/0014-rnn-from-scratch-bptt.html"><span class="num">14.</span> RNNs from scratch &amp; BPTT</a>
+      <span class="desc">Hidden state, weights shared across time, and the backward pass.</span></li>
+  <li><a href="lessons/0015-keras-rnn-imdb.html"><span class="num">15.</span> RNNs in Keras (IMDB sentiment)</a>
+      <span class="desc">Embedding, SimpleRNN, padding, vocab size, <code>max_len</code>.</span></li>
+  <li><a href="lessons/0016-why-rnns-fail-lstm.html"><span class="num">16.</span> Why RNNs fail — LSTM &amp; GRU</a>
+      <span class="desc">Vanishing / exploding gradients over long sequences; the gated fix.</span></li>
+</ul>
+
+<h2>Phase 5 · Generation &amp; the frontier</h2>
+<ul class="lesson-list">
+  <li><a href="lessons/0017-gans.html"><span class="num">17.</span> Generative adversarial networks</a>
+      <span class="desc">Generator vs discriminator, adversarial training, the toy 1-D GAN.</span></li>
+  <li><a href="lessons/0018-transformers-attention.html"><span class="num">18.</span> Transformers &amp; attention</a>
+      <span class="desc">Self-attention, Q / K / V, scaled dot-product, why <code>√d_k</code>. Research/reading.</span></li>
+</ul>
+
+<h2>Reference &amp; workspace</h2>
+<ul class="lesson-list">
+  <li><a href="GLOSSARY.md">Glossary</a>
+      <span class="desc">The canonical terms for this workspace.</span></li>
+  <li><a href="RESOURCES.md">Resources</a>
+      <span class="desc">Vetted videos, docs, articles, papers, and communities.</span></li>
+  <li><a href="MISSION.md">Mission</a>
+      <span class="desc">Why this workspace exists and what success looks like.</span></li>
+</ul>
+
+<p class="sidenote">Suggested pace: one lesson per sitting, then revisit the previous lesson's quiz a day later (spacing builds long-term retention).</p>
+</body>
+</html>

@@ -1,0 +1,20 @@
+{
+    "name": "CIFAR-10 Kaggle Ready Pro",
+    "classes": [
+        "airplane",
+        "automobile",
+        "bird",
+        "cat",
+        "deer",
+        "dog",
+        "frog",
+        "horse",
+        "ship",
+        "truck"
+    ],
+    "splits": {
+        "train": 45000,
+        "val": 5000,
+        "test": 10000
+    }
+}

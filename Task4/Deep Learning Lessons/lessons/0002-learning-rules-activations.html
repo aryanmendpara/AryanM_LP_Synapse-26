@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 2 — Learning rules &amp; activation functions</title>
+<link rel="stylesheet" href="../assets/course.css">
+<script src="../assets/quiz.js" defer></script>
+<script src="../assets/course-nav.js" defer></script>
+</head>
+<body>
+<p class="lesson-eyebrow">Lesson 02 · Deep Learning</p>
+<h1>Learning rules &amp; activation functions</h1>
+<p class="subtitle">The one skill: <em>tell Hebbian from the delta rule, and pick the right activation for a task.</em></p>
+
+<div class="objective">
+  <span class="label">By the end you can</span>
+  Distinguish Hebbian learning (<code>Δw = η x y</code>) from the perceptron/delta rule (<code>Δw = η (y − ŷ) x</code>), list the step/bipolar/sigmoid activations and their ranges, and explain why nonlinearity matters.
+</div>
+
+<h2>Two ways a neuron learns</h2>
+<p>Not all "learning rules" are the same. The key difference is <strong>what signal drives the update</strong>.</p>
+
+<h3>1) Hebbian learning ("cells that fire together, wire together")</h3>
+<p>Donald Hebb's idea: if an input neuron and an output neuron fire at the same time, strengthen the connection between them. No teacher label is required — it's <strong>unsupervised</strong> correlation-based learning.</p>
+<pre><code>Δw_i = η · x_i · y    <span class="c-com"># strengthen when both active</span>
+w ← w + Δw</code></pre>
+<ul>
+  <li><strong>Drives on correlation:</strong> if both <code>x_i</code> and <code>y</code> are +1, weights grow. If one is -1 and other +1, they oppose and weights shrink.</li>
+  <li><strong>No error term:</strong> there's no "<code>y_true − ŷ</code>". Hebbian learns what co-occurs, not "what's correct".</li>
+  <li><strong>Watch out for growth:</strong> without normalization/decay, weights can grow without bound (a common gotcha).</li>
+</ul>
+
+<h3>2) Delta rule / Perceptron learning rule ("learn from mistakes")</h3>
+<p>The rule from Lesson 1 is the <strong>delta rule</strong> for a linear/perceptron unit: use a <strong>supervisor</strong> (a label <code>y</code>) and update only when there's an error.</p>
+<pre><code>error = y − ŷ
+Δw_i = η · error · x_i
+Δb   = η · error
+w ← w + Δw,  b ← b + Δb</code></pre>
+<ul>
+  <li><strong>Drives on error:</strong> correct predictions give <code>error=0</code> → no update (self-stabilizing).</li>
+  <li><strong>Supervised:</strong> needs <code>y</code> (true label).</li>
+  <li><strong>Goal:</strong> reduce the difference between prediction and label.</li>
+</ul>
+
+<div class="callout">
+  <span class="label">Rule of thumb</span> <strong>Hebbian</strong> = "fire together, wire together" (correlation). <strong>Delta/perceptron</strong> = "wrong? fix it." (error correction).
+</div>
+
+<h2>Activation functions: the "gate" of the neuron</h2>
+<p>The activation decides what the neuron outputs after <code>z = w·x + b</code>. Different activations change the <strong>range</strong> of outputs and (critically later) the <strong>gradient</strong>.</p>
+
+<table>
+  <tr><th>Function</th><th>Formula (intuition)</th><th>Output range</th><th>Where used</th><th>Notes</th></tr>
+  <tr><td><strong>Step (binary)</strong></td><td><code>f(z)=1 if z≥0 else 0</code></td><td><code>{0,1}</code></td><td>Perceptron (Lesson 1)</td><td>Sharp threshold; no gradient (can't do gradient descent).</td></tr>
+  <tr><td><strong>Bipolar step</strong></td><td><code>f(z)=+1 if z≥0 else -1</code></td><td><code>{-1,+1}</code></td><td>Some older nets / bipolar perceptrons</td><td>Symmetric around 0; sometimes nicer with bipolar inputs.</td></tr>
+  <tr><td><strong>Sigmoid (logistic)</strong></td><td><code>σ(z)=1/(1+e^{-z})</code></td><td><code>(0,1)</code></td><td>Binary classification output (single neuron); historical hidden layers</td><td>Smooth, S-shaped. Outputs can be interpreted as probability. Squashes large |z| to near 0 or 1 (vanishing gradient in deep nets).</td></tr>
+</table>
+
+<h3>Why range matters</h3>
+<ul>
+  <li><strong>Outputs vs logic:</strong> If you need a strict yes/no (the original perceptron), step/bipolar is direct. If you need a <strong>probability</strong> for binary classification, <strong>sigmoid</strong> is natural.</li>
+  <li><strong>Input compatibility:</strong> Bipolar activations pair well with <strong>bipolar inputs</strong> <code>{-1,+1}</code> (they're symmetric). Binary <code>{0,1}</code> is also common and matches the perceptron examples.</li>
+  <li><strong>Nonlinearity is the superpower:</strong> A single linear neuron gives a straight line. Stacking linear layers <em>without</em> a nonlinear activation still gives only a straight line. Add a nonlinear activation (like sigmoid) between layers and you can form curves — which is how a small network learns XOR (Lesson 3).</li>
+</ul>
+
+<div class="callout">
+  <span class="label">Key point</span> <strong>No activation (or identity) = linear.</strong> <strong>Nonlinear activation = can bend boundaries.</strong>
+</div>
+
+<h2>Quick sanity checks</h2>
+<table>
+  <tr><th>Question</th><th>Check</th></tr>
+  <tr><td>Is Hebbian supervised?</td><td><strong>No.</strong> It uses correlation <code>x·y</code>, not <code>y_true − ŷ</code>.</td></tr>
+  <tr><td>When does delta rule update?</td><td><strong>Only on error.</strong> If prediction matches label, <code>error=0</code> → no change.</td></tr>
+  <tr><td>Can a perceptron use gradient descent?</td><td><strong>Not directly.</strong> The step function has zero gradient almost everywhere (and undefined at 0), so we use the perceptron rule (error correction), not smooth gradient descent on step.</td></tr>
+  <tr><td>Why sigmoid for output?</td><td>It maps any real number to <code>(0,1)</code>, easy to interpret as <code>P(y=1|x)</code> for binary classification.</td></tr>
+</table>
+
+<h2>Recap — five bullets</h2>
+<ul>
+  <li><strong>Hebbian:</strong> <code>Δw = η x y</code> — correlation-based, unsupervised; "fire together, wire together".</li>
+  <li><strong>Delta/perceptron:</strong> <code>Δw = η (y − ŷ) x</code> — error-correcting, supervised; only updates on mistakes.</li>
+  <li><strong>Step:</strong> <code>{0,1}</code>, threshold at 0. Good for hard decisions, bad for gradients.</li>
+  <li><strong>Bipolar step:</strong> <code>{-1,+1}</code>, symmetric. Pairs naturally with bipolar inputs.</li>
+  <li><strong>Sigmoid:</strong> <code>(0,1)</code>, smooth and probabilistic. Nonlinear — essential to stack layers beyond a straight line.</li>
+</ul>
+
+<h2>Practice (hints only — no solutions)</h2>
+<ol>
+  <li><strong>Spot the rule.</strong> Given <code>x=[1,0], y=1, ŷ=0, η=0.1</code>, compute <code>Δw</code> with (a) Hebbian and (b) the delta rule. What differs?</li>
+  <li><strong>Input choice.</strong> You have bipolar step activation. Would you rather feed <code>[0,1]</code> or <code>[-1,+1]</code>? Why (symmetry / balance)?</li>
+  <li><strong>Nonlinearity test.</strong> If you have two linear layers with no activation between them, what shape of boundary can they form? Prove/argue in words.</li>
+</ol>
+
+<h2>Quiz</h2>
+<p class="sidenote">Answer from memory before clicking — effort builds retention.</p>
+
+<div class="quiz" data-explain="Hebbian learning strengthens connections when input and output fire together; it has no teacher error term.">
+  <p class="quiz-q">1. Hebbian learning is best described as…</p>
+  <button class="quiz-opt" data-correct="false">error-correcting using (y − ŷ)</button>
+  <button class="quiz-opt" data-correct="true">correlation-based: strengthen when input and output co-occur</button>
+  <button class="quiz-opt" data-correct="false">minimizing cross-entropy by gradient descent</button>
+  <button class="quiz-opt" data-correct="false">random search over weights</button>
+  <p class="quiz-feedback" hidden></p>
+</div>
+
+<div class="quiz" data-explain="The delta/perceptron rule updates only when there is a difference between true label and prediction.">
+  <p class="quiz-q">2. The perceptron learning rule updates weights when…</p>
+  <button class="quiz-opt" data-correct="true">the prediction differs from the true label</button>
+  <button class="quiz-opt" data-correct="false">the inputs are all positive</button>
+  <button class="quiz-opt" data-correct="false">the bias is zero</button>
+  <button class="quiz-opt" data-correct="false">weights are already large</button>
+  <p class="quiz-feedback" hidden></p>
+</div>
+
+<div class="quiz" data-explain="Sigmoid squashes to (0,1), making it natural to interpret the output as a probability for binary classification.">
+  <p class="quiz-q">3. Which activation is most directly suited to outputting a probability for binary classification?</p>
+  <button class="quiz-opt" data-correct="false">Step function {0,1}</button>
+  <button class="quiz-opt" data-correct="false">Bipolar step {-1,+1}</button>
+  <button class="quiz-opt" data-correct="true">Sigmoid (logistic)</button>
+  <button class="quiz-opt" data-correct="false">Identity (no activation)</button>
+  <p class="quiz-feedback" hidden></p>
+</div>
+
+<div class="quiz" data-explain="Step is a hard threshold with zero/undefined gradient, so the perceptron uses the error-correcting rule rather than smooth gradient descent.">
+  <p class="quiz-q">4. Why don't we use standard gradient descent to train a pure perceptron with a step activation?</p>
+  <button class="quiz-opt" data-correct="true">The step function has no usable gradient</button>
+  <button class="quiz-opt" data-correct="false">It has too many weights</button>
+  <button class="quiz-opt" data-correct="false">It only works for images</button>
+  <button class="quiz-opt" data-correct="false">The bias prevents differentiation</button>
+  <p class="quiz-feedback" hidden></p>
+</div>
+
+<div class="quiz" data-explain="Stacking linear layers without nonlinear activations composes to another linear function, so the network can only form straight lines/hyperplanes.">
+  <p class="quiz-q">5. Two linear layers with no activation between them are equivalent to…</p>
+  <button class="quiz-opt" data-correct="true">a single linear layer</button>
+  <button class="quiz-opt" data-correct="false">a nonlinear XOR solver</button>
+  <button class="quiz-opt" data-correct="false">a decision tree</button>
+  <button class="quiz-opt" data-correct="false">a convolutional filter bank</button>
+  <p class="quiz-feedback" hidden></p>
+</div>
+
+<div class="quiz" data-explain="Bipolar step outputs {-1,+1} and is symmetric; it's often paired with bipolar inputs {-1,+1}.">
+  <p class="quiz-q">6. The bipolar step activation outputs values in…</p>
+  <button class="quiz-opt" data-correct="false">{0,1}</button>
+  <button class="quiz-opt" data-correct="true">{-1,+1}</button>
+  <button class="quiz-opt" data-correct="false">(0,1)</button>
+  <button class="quiz-opt" data-correct="false">(-∞, +∞)</button>
+  <p class="quiz-feedback" hidden></p>
+</div>
+
+<p><strong>Written questions.</strong> Work these on paper, then check the key.</p>
+<ol start="7">
+  <li><em>(compare)</em> Write both update rules for a single weight <code>w_i</code>: Hebbian vs delta/perceptron.</li>
+  <li><em>(explain)</em> Why does adding a nonlinear activation between layers let a network solve XOR?</li>
+  <li><em>(apply)</em> For binary classification with a single output neuron, which activation (and why) is better: step or sigmoid?</li>
+  <li><em>(reason)</em> If weights grow without bound under pure Hebbian learning, what simple fix might prevent it?</li>
+</ol>
+
+<h2>Answer key</h2>
+<ol>
+  <li><strong>B</strong> — correlation between input and output, no error term.</li>
+  <li><strong>A</strong> — updates on <code>y − ŷ != 0</code>.</li>
+  <li><strong>C</strong> — sigmoid gives <code>(0,1)</code>, interpretable as probability.</li>
+  <li><strong>A</strong> — step has zero/undefined gradient; use error-correcting rule instead.</li>
+  <li><strong>A</strong> — <code>W₂ (W₁ x + b₁) + b₂ = (W₂ W₁) x + (W₂ b₁ + b₂)</code> is linear.</li>
+  <li><strong>B</strong> — <code>{-1,+1}</code>.</li>
+  <li><strong>Hebbian:</strong> <code>w_i ← w_i + η · x_i · y</code>. <strong>Delta/perceptron:</strong> <code>w_i ← w_i + η · (y − ŷ) · x_i</code> (supervised by error).</li>
+  <li>Without nonlinearity, stacked layers collapse to one linear function (only straight boundaries). A nonlinear activation bends the feature space so hidden units can create combinations that form a nonlinear boundary capable of separating XOR.</li>
+  <li><strong>Sigmoid.</strong> Step gives a hard 0/1 but no gradient for training; sigmoid gives a smooth <code>(0,1)</code> output (probabilistic) and works well as a binary classifier output (and pairs with cross-entropy).</li>
+  <li>Normalize or apply decay/weight normalization (e.g. keep weights bounded, or use Oja's rule which adds a decay term) so correlation doesn't cause unbounded growth.</li>
+</ol>
+
+<div class="source">
+  <span class="label">Primary source</span>
+  <a href="https://www.youtube.com/playlist?list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi">3Blue1Brown — Neural Networks (ch. 1–2)</a> for intuition; <a href="https://www.youtube.com/watch?v=vhJaUWGqQC8">StatQuest — Perceptron</a> for the arithmetic. Terms live in the <a href="../GLOSSARY.md">glossary</a>.
+</div>
+
+<div class="ask">
+  <strong>Your teacher is right here.</strong> Anything fuzzy — <em>"when to use bipolar vs binary?"</em>, <em>"is Hebbian ever used now?"</em>, <em>"why does nonlinearity matter so much?"</em> — just ask. I'll steer the next lesson based on it.
+</div>
+
+<nav class="next">
+<a href="../index.html">← Course home</a>
+<a href="../GLOSSARY.md">Glossary</a>
+<a href="0001-artificial-neuron-perceptron.html">← 1. The artificial neuron &amp; the perceptron</a>
+<a href="0003-xor-linear-separability.html">3. The XOR wall →</a>
+</nav>
+</body>
+</html>
