@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 9 — Tensors &amp; automatic differentiation</title>
+<link rel="stylesheet" href="../assets/course.css">
+<script src="../assets/quiz.js" defer></script>
+<script src="../assets/course-nav.js" defer></script>
+</head>
+<body>
+<p class="lesson-eyebrow">Lesson 09 · Deep Learning</p>
+<h1>Tensors &amp; automatic differentiation</h1>
+<p class="subtitle">The one skill: <em>know why frameworks use tensors and autodiff.</em></p>
+
+<div class="objective">
+  <span class="label">By the end you can</span>
+  Define tensors, explain computational graphs, and why TensorFlow/PyTorch compute gradients automatically.
+</div>
+
+<h2>What is a tensor?</h2>
+<p>A tensor is a generalization of scalars/vectors/matrices to n dimensions. In TF, everything is a tensor.</p>
+<ul>
+  <li>scalar: 0D</li>
+  <li>vector: 1D</li>
+  <li>matrix: 2D</li>
+  <li>... higher dims</li>
+</ul>
+
+<h2>Computational graph</h2>
+<p>Frameworks build a graph of operations; when you call <code>GradientTape</code> (TF) or <code>backward()</code> (PyTorch), they traverse backwards applying chain rule.</p>
+
+<h2>Why not just NumPy?</h2>
+<ul>
+  <li>GPU acceleration</li>
+  <li>Automatic differentiation</li>
+  <li>High-level APIs (layers, optimizers)</li>
+  <li>Efficient batching</li>
+</ul>
+
+<h2>Quiz</h2>
+<div class="quiz" data-explain="Autodiff computes gradients automatically via chain rule.">
+  <p class="quiz-q">1. Automatic differentiation means...</p>
+  <button class="quiz-opt" data-correct="true">the framework computes gradients for you</button>
+  <button class="quiz-opt" data-correct="false">you write derivatives by hand</button>
+  <button class="quiz-opt" data-correct="false">no backprop needed</button>
+  <button class="quiz-opt" data-correct="false">only works for linear</button>
+  <p class="quiz-feedback" hidden></p>
+</div>
+
+<div class="source">
+  <span class="label">Primary source</span>
+  <a href="https://www.tensorflow.org/guide/autodiff">TensorFlow Autodiff Guide</a>
+</div>
+<div class="ask"><strong>Teacher here.</strong> Ask about GradientTape and I'll explain.</div>
+<nav class="next">
+<a href="../index.html">← Course home</a>
+<a href="0008-judging-a-model-honestly.html">← 8. Judging honestly</a>
+<a href="0010-what-hidden-layers-learn.html">10. What hidden layers learn →</a>
+</nav>
+</body>
+</html>

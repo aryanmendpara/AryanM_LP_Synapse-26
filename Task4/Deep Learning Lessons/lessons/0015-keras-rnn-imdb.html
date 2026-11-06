@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 15 — RNNs in Keras (IMDB sentiment)</title>
+<link rel="stylesheet" href="../assets/course.css">
+<script src="../assets/quiz.js" defer></script>
+<script src="../assets/course-nav.js" defer></script>
+</head>
+<body>
+<p class="lesson-eyebrow">Lesson 15 · Deep Learning</p>
+<h1>RNNs in Keras (IMDB sentiment)</h1>
+<p class="subtitle">The one skill: <em>build an RNN for text classification.</em></p>
+
+<div class="objective">
+  <span class="label">By the end you can</span>
+  Explain embedding, padding/truncation, vocab size, max_len, and SimpleRNN/LSTM basics.
+</div>
+
+<h2>Pipeline</h2>
+<ol>
+  <li>Tokenize text → sequences of word indices</li>
+  <li>Pad/truncate to fixed <code>max_len</code></li>
+  <li><code>Embedding(vocab_size, embedding_dim)</code> maps words to dense vectors</li>
+  <li><code>SimpleRNN/LSTM</code> processes sequence</li>
+  <li><code>Dense(1, activation='sigmoid')</code> for sentiment</li>
+</ol>
+
+<h2>Example</h2>
+<pre><code>from tensorflow.keras.datasets import imdb
+from tensorflow.keras.preprocessing.sequence import pad_sequences
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Embedding, SimpleRNN, Dense
+
+(x_train,y_train),(x_test,y_test)=imdb.load_data(num_words=10000)
+x_train = pad_sequences(x_train, maxlen=500)
+x_test = pad_sequences(x_test, maxlen=500)
+
+model = Sequential([
+  Embedding(10000, 32),
+  SimpleRNN(32),
+  Dense(1, activation='sigmoid')
+])
+model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+model.fit(x_train,y_train, epochs=5, batch_size=64, validation_split=0.2)
+</code></pre>
+
+<h2>Key terms</h2>
+<ul>
+  <li><strong>Embedding:</strong> Learns word representations (dense) vs one-hot</li>
+  <li><strong>Padding:</strong> Make all sequences same length</li>
+  <li><strong>Truncation:</strong> Cut long sequences</li>
+</ul>
+
+<h2>Quiz</h2>
+<div class="quiz" data-explain="Embedding gives dense meaningful representations.">
+  <p class="quiz-q">1. Why use Embedding layer?</p>
+  <button class="quiz-opt" data-correct="true">maps words to dense vectors capturing meaning</button>
+  <button class="quiz-opt" data-correct="false">makes words longer</button>
+  <button class="quiz-opt" data-correct="false">converts to images</button>
+  <button class="quiz-opt" data-correct="false">deletes stopwords</button>
+  <p class="quiz-feedback" hidden></p>
+</div>
+
+<div class="source">
+  <span class="label">Primary source</span>
+  <a href="https://keras.io/api/layers/core_layers/embedding/">Keras Embedding</a> · <a href="https://www.tensorflow.org/text/tutorials/text_classification_rnn">TensorFlow Text Classification RNN</a>
+</div>
+<div class="ask"><strong>Teacher here.</strong> Ask about padding/truncation effects.</div>
+<nav class="next">
+<a href="../index.html">← Course home</a>
+<a href="0014-rnn-from-scratch-bptt.html">← 14. RNNs &amp; BPTT</a>
+<a href="0016-why-rnns-fail-lstm.html">16. Why RNNs fail — LSTM/GRU →</a>
+</nav>
+</body>
+</html>

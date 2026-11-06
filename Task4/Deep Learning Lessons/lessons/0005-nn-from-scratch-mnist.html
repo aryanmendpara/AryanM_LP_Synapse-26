@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 5 — A full network from scratch (MNIST)</title>
+<link rel="stylesheet" href="../assets/course.css">
+<script src="../assets/quiz.js" defer></script>
+<script src="../assets/course-nav.js" defer></script>
+</head>
+<body>
+<p class="lesson-eyebrow">Lesson 05 · Deep Learning</p>
+<h1>A full network from scratch (MNIST)</h1>
+<p class="subtitle">The one skill: <em>trace a 2-layer network (input→hidden→output) for one MNIST image.</em></p>
+
+<div class="objective">
+  <span class="label">By the end you can</span>
+  Explain shapes, sigmoid activation, softmax for multiclass, cross-entropy, one-hot encoding, and the key simplification <code>dL/dZ₃ = A₃ - y</code>.
+</div>
+
+<h2>Architecture (typical)</h2>
+<ul>
+  <li>Input: 784 (28x28 flattened)</li>
+  <li>Hidden: e.g. 128 neurons, <code>sigmoid</code></li>
+  <li>Output: 10 neurons (digits 0-9), <code>softmax</code></li>
+</ul>
+
+<h2>Shapes</h2>
+<pre><code>W1: (hidden, input), b1: (hidden,1)
+Z1 = W1·X + b1, A1 = σ(Z1)
+W2: (output, hidden), b2: (output,1)
+Z2 = W2·A1 + b2, A2 = softmax(Z2)  # predictions
+</code></pre>
+
+<h2>Activations</h2>
+<ul>
+  <li><strong>Sigmoid:</strong> <code>σ(z)=1/(1+e^{-z})</code>, range (0,1). Smooth gradient.</li>
+  <li><strong>Softmax:</strong> <code>softmax(z_i)=e^{z_i}/∑_j e^{z_j}</code>, outputs sum to 1 — treat as probabilities over classes.</li>
+</ul>
+
+<h2>Loss: Cross-entropy (multiclass)</h2>
+<p>For one example, <code>L = -∑_c y_c log(A2_c)</code>. With one-hot <code>y</code> (1 at true class), this is <code>-log(p_{true})</code>.</p>
+
+<h2>Backprop key result</h2>
+<p>For softmax + cross-entropy, the gradient of loss w.r.t. pre-activation of output layer simplifies beautifully:</p>
+<pre><code>dZ2 = A2 - y  (shape same as A2/y)
+</code></pre>
+<p>That's the "magic" — no big product of derivatives, just prediction minus true label (one-hot). From there use chain rule to get dW2, db2, dZ1, dW1, db1.</p>
+
+<h2>Gradients (sketch)</h2>
+<pre><code>dZ2 = A2 - y
+dW2 = dZ2 * A1^T / m
+db2 = sum(dZ2)/m
+dZ1 = (W2^T * dZ2) * σ'(Z1)  (elementwise)
+dW1 = dZ1 * X^T / m
+db1 = sum(dZ1)/m
+</code></pre>
+<p>Update: <code>W -= lr*dW</code>.</p>
+
+<h2>Training loop (structure)</h2>
+<ol>
+  <li>Load MNIST, normalize to [0,1], one-hot encode labels</li>
+  <li>Init W1,b1,W2,b2 small random</li>
+  <li>For epochs: for each batch/example do forward → compute loss → backward → update</li>
+  <li>Track accuracy on train/test</li>
+</ol>
+
+<div class="callout">
+  <span class="label">Important</span> Vectorize with NumPy (matrix multiply) — don't loop over neurons/inputs manually if you can avoid it.
+</div>
+
+<h2>Common gotchas</h2>
+<ul>
+  <li><strong>Shapes:</strong> X is (784, m), W1 (128,784) gives (128,m). Get shapes right.</li>
+  <li><strong>Softmax overflow:</strong> Subtract max before exp (as notebook mentions).</li>
+  <li><strong>Zero init:</strong> Bad for symmetry in deeper nets (Lesson 6).</li>
+  <li><strong>Learning rate:</strong> Too big oscillates/diverges, too small slow.</li>
+</ul>
+
+<h2>Quiz</h2>
+<div class="quiz" data-explain="dZ2 = A2 - y for softmax+cross-entropy.">
+  <p class="quiz-q">1. The big simplification for softmax+cross-entropy is...</p>
+  <button class="quiz-opt" data-correct="true">dL/dZ = A - y</button>
+  <button class="quiz-opt" data-correct="false">dL/dZ = A * (1-A)</button>
+  <button class="quiz-opt" data-correct="false">always zero</button>
+  <button class="quiz-opt" data-correct="false">equals weights</button>
+  <p class="quiz-feedback" hidden></p>
+</div>
+<div class="quiz" data-explain="Softmax outputs probabilities summing to 1.">
+  <p class="quiz-q">2. Why use softmax on output layer for MNIST?</p>
+  <button class="quiz-opt" data-correct="true">gives probability distribution over 10 classes summing to 1</button>
+  <button class="quiz-opt" data-correct="false">makes values integers</button>
+  <button class="quiz-opt" data-correct="false">removes bias</button>
+  <button class="quiz-opt" data-correct="false">normalizes to [-1,1]</button>
+  <p class="quiz-feedback" hidden></p>
+</div>
+
+<div class="source">
+  <span class="label">Primary source</span>
+  <a href="https://medium.com/@waadlingaadil/learn-to-build-a-neural-network-from-scratch-yes-really-cac4ca457efc">Waad Al-Humaimidi</a> · <a href="https://colah.github.io/posts/2015-08-Backprop/">Colah's Backprop notes</a>
+</div>
+<div class="ask"><strong>Teacher here.</strong> Trace shapes for one example step by step and I'll check.</div>
+<nav class="next">
+<a href="../index.html">← Course home</a>
+<a href="0004-one-neuron-backprop-addition.html">← 4. Backprop addition</a>
+<a href="0006-debugging-training.html">6. Debugging training →</a>
+</nav>
+</body>
+</html>

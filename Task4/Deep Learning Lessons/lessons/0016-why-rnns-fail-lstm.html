@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 16 — Why RNNs fail — LSTM &amp; GRU</title>
+<link rel="stylesheet" href="../assets/course.css">
+<script src="../assets/quiz.js" defer></script>
+<script src="../assets/course-nav.js" defer></script>
+</head>
+<body>
+<p class="lesson-eyebrow">Lesson 16 · Deep Learning</p>
+<h1>Why RNNs fail — LSTM &amp; GRU</h1>
+<p class="subtitle">The one skill: <em>explain gates and long-term memory.</em></p>
+
+<div class="objective">
+  <span class="label">By the end you can</span>
+  Explain vanishing/exploding gradients, LSTM cell state/gates, and why they help.
+</div>
+
+<h2>The problem</h2>
+<p>Long sequences → repeated multiplication by <code>W_hh</code> causes gradients to vanish/explode. SimpleRNN forgets long-range dependencies.</p>
+
+<h2>LSTM idea</h2>
+<p>Add a <strong>cell state</strong> (conveyor belt) that carries information across long time with minimal modification. Gates control flow:</p>
+<ul>
+  <li><strong>Forget gate:</strong> what to remove from cell state</li>
+  <li><strong>Input gate:</strong> what new info to store</li>
+  <li><strong>Output gate:</strong> what to output based on cell state</li>
+</ul>
+
+<h2>GRU (simplified)</h2>
+<p>Combines forget/input into update gate, merges cell/hidden state. Fewer params, often similar performance.</p>
+
+<h2>When to use</h2>
+<ul>
+  <li>Long sequences → use LSTM/GRU</li>
+  <li>Short sequences → SimpleRNN might suffice</li>
+</ul>
+
+<h2>Quiz</h2>
+<div class="quiz" data-explain="Cell state allows information to flow unchanged.">
+  <p class="quiz-q">1. LSTMs handle long dependencies better because of...</p>
+  <button class="quiz-opt" data-correct="true">cell state and gating mechanism</button>
+  <button class="quiz-opt" data-correct="false">more epochs</button>
+  <button class="quiz-opt" data-correct="false">larger learning rate</button>
+  <button class="quiz-opt" data-correct="false">removing hidden state</button>
+  <p class="quiz-feedback" hidden></p>
+</div>
+
+<div class="source">
+  <span class="label">Primary source</span>
+  <a href="https://colah.github.io/posts/2015-08-Understanding-LSTMs/">Understanding LSTMs (Colah)</a>
+</div>
+<div class="ask"><strong>Teacher here.</strong> Ask about forget gate intuition.</div>
+<nav class="next">
+<a href="../index.html">← Course home</a>
+<a href="0015-keras-rnn-imdb.html">← 15. RNNs in Keras</a>
+<a href="0017-gans.html">17. GANs →</a>
+</nav>
+</body>
+</html>

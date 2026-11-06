@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 3 — The XOR wall (linear separability)</title>
+<link rel="stylesheet" href="../assets/course.css">
+<script src="../assets/quiz.js" defer></script>
+<script src="../assets/course-nav.js" defer></script>
+</head>
+<body>
+<p class="lesson-eyebrow">Lesson 03 · Deep Learning</p>
+<h1>The XOR wall</h1>
+<p class="subtitle">The one skill: <em>see why XOR needs a hidden layer, and how to build it from OR + NAND.</em></p>
+
+<div class="objective">
+  <span class="label">By the end you can</span>
+  Explain linear separability, show why one perceptron fails on XOR, and construct XOR using two hidden perceptrons (OR, NAND) + an output perceptron (AND).
+</div>
+
+<h2>Recap: a single line</h2>
+<p>From Lesson 1: a single perceptron computes <code>z = w·x + b</code> and draws <strong>exactly one straight line</strong> as its decision boundary. It can solve problems where the two classes are <strong>linearly separable</strong> (separable by a hyperplane/line). OR and AND are; XOR is not.</p>
+
+<h2>The XOR truth table</h2>
+<table>
+  <tr><th>x₁</th><th>x₂</th><th>OR</th><th>AND</th><th>NAND</th><th>XOR</th></tr>
+  <tr><td>0</td><td>0</td><td>0</td><td>0</td><td>1</td><td>0</td></tr>
+  <tr><td>0</td><td>1</td><td>1</td><td>0</td><td>1</td><td>1</td></tr>
+  <tr><td>1</td><td>0</td><td>1</td><td>0</td><td>1</td><td>1</td></tr>
+  <tr><td>1</td><td>1</td><td>1</td><td>1</td><td>0</td><td>0</td></tr>
+</table>
+<p>Look at XOR outputs: <code>(0,0)=0, (0,1)=1, (1,0)=1, (1,1)=0</code>. The 1-points sit at opposite corners; 0-points at the other two. No single straight line separates them.</p>
+
+<div class="callout">
+  <span class="label">Definition</span> A dataset is <strong>linearly separable</strong> if one hyperplane splits classes perfectly. XOR is <strong>not</strong> linearly separable.
+</div>
+
+<h2>Fix: combine perceptrons (hidden layer)</h2>
+<p>Transform inputs into a new space where separation becomes linear. Use a hidden layer, then an output layer.</p>
+<ol>
+  <li><strong>h1 (OR):</strong> <code>h1 = OR(x1,x2)</code></li>
+  <li><strong>h2 (NAND):</strong> <code>h2 = NAND(x1,x2)</code></li>
+  <li><strong>Output (AND):</strong> <code>y = AND(h1,h2)</code></li>
+</ol>
+
+<table>
+  <tr><th>x1,x2</th><th>h1</th><th>h2</th><th>h1∧h2</th><th>XOR</th></tr>
+  <tr><td>(0,0)</td><td>0</td><td>1</td><td>0</td><td>0 ✓</td></tr>
+  <tr><td>(0,1)</td><td>1</td><td>1</td><td>1</td><td>1 ✓</td></tr>
+  <tr><td>(1,0)</td><td>1</td><td>1</td><td>1</td><td>1 ✓</td></tr>
+  <tr><td>(1,1)</td><td>1</td><td>0</td><td>0</td><td>0 ✓</td></tr>
+</table>
+<p>In <code>(h1,h2)</code> space, the points become linearly separable.</p>
+
+<h2>Code (matches Task_4A)</h2>
+<pre><code>import numpy as np
+
+class PerceptronNetwork:
+    def __init__(self, input_size):
+        self.weights = np.random.rand(input_size)
+        self.bias = np.random.rand(1)
+    def predict(self, x):
+        weighted_sum = np.dot(x, self.weights) + self.bias
+        return 1 if weighted_sum >= 0 else 0
+    def train(self, X, y, lr, epochs):
+        for _ in range(epochs):
+            for i in range(len(X)):
+                pred = self.predict(X[i])
+                err = y[i] - pred
+                self.weights += lr * err * X[i]
+                self.bias += lr * err
+
+X = np.array([[0,0],[0,1],[1,0],[1,1]])
+y_or,y_nand,y_xor = np.array([0,1,1,1]), np.array([1,1,1,0]), np.array([0,1,1,0])
+
+h1,h2 = PerceptronNetwork(2), PerceptronNetwork(2)
+h1.train(X,y_or,0.1,1000); h2.train(X,y_nand,0.1,1000)
+H = np.array([[h1.predict(x),h2.predict(x)] for x in X])
+out = PerceptronNetwork(2); out.train(H,y_xor,0.1,1000)
+def xor_predict(x): 
+    h=np.array([h1.predict(x),h2.predict(x)]); return out.predict(h)
+print([xor_predict(x) for x in X])</code></pre>
+
+<h2>Recap</h2>
+<ul>
+  <li>One perceptron = one line; XOR needs nonlinear boundary.</li>
+  <li>Hidden layer learns representation making problem linearly separable.</li>
+  <li>Architecture (layers) matters more than epochs for non-separable problems.</li>
+</ul>
+
+<h2>Quiz</h2>
+<div class="quiz" data-explain="No straight line separates XOR.">
+  <p class="quiz-q">1. XOR is not solvable by one perceptron because it is...</p>
+  <button class="quiz-opt" data-correct="true">not linearly separable</button>
+  <button class="quiz-opt" data-correct="false">multiclass</button>
+  <button class="quiz-opt" data-correct="false">too noisy</button>
+  <button class="quiz-opt" data-correct="false">has too many features</button>
+  <p class="quiz-feedback" hidden></p>
+</div>
+<div class="quiz" data-explain="Hidden units transform space.">
+  <p class="quiz-q">2. Hidden layer helps by...</p>
+  <button class="quiz-opt" data-correct="true">creating a new feature space where classes become linearly separable</button>
+  <button class="quiz-opt" data-correct="false">removing bias</button>
+  <button class="quiz-opt" data-correct="false">doubling learning rate</button>
+  <button class="quiz-opt" data-correct="false">using step function differently</button>
+  <p class="quiz-feedback" hidden></p>
+</div>
+
+<div class="source">
+  <span class="label">Primary source</span>
+  <a href="https://www.youtube.com/playlist?list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi">3Blue1Brown — Neural Networks (ch. 3)</a> · <a href="https://playground.tensorflow.org/">TensorFlow Playground</a>
+</div>
+<div class="ask"><strong>Teacher here.</strong> Try XOR in Playground with 2 hidden neurons — tell me what you see.</div>
+<nav class="next">
+<a href="../index.html">← Course home</a>
+<a href="0002-learning-rules-activations.html">← 2. Learning rules &amp; activations</a>
+<a href="0004-one-neuron-backprop-addition.html">4. Backprop: one neuron learns addition →</a>
+</nav>
+</body>
+</html>

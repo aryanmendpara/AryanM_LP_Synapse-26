@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 12 — Training a CNN &amp; overfitting</title>
+<link rel="stylesheet" href="../assets/course.css">
+<script src="../assets/quiz.js" defer></script>
+<script src="../assets/course-nav.js" defer></script>
+</head>
+<body>
+<p class="lesson-eyebrow">Lesson 12 · Deep Learning</p>
+<h1>Training a CNN &amp; overfitting</h1>
+<p class="subtitle">The one skill: <em>spot and fix overfitting on CIFAR-10.</em></p>
+
+<div class="objective">
+  <span class="label">By the end you can</span>
+  Explain train/val gap, dropout, data augmentation, early stopping, and regularization.
+</div>
+
+<h2>Overfitting</h2>
+<p>Model memorizes training data but fails to generalize. Look for training accuracy >> validation accuracy.</p>
+
+<h2>Techniques</h2>
+<ul>
+  <li><strong>Dropout(rate):</strong> Randomly turn off neurons during training → prevents co-adaptation</li>
+  <li><strong>Data augmentation:</strong> Flip/rotate/crop images → more varied data</li>
+  <li><strong>Early stopping:</strong> Stop when validation loss stops improving</li>
+  <li><strong>BatchNormalization:</strong> Stabilizes training (sometimes helps)</li>
+</ul>
+
+<h2>CIFAR-10 notes</h2>
+<p>Color images, 10 classes, harder than MNIST. CNNs are needed; normalization to [0,1] is important.</p>
+
+<h2>Quiz</h2>
+<div class="quiz" data-explain="Dropout prevents overfitting by adding noise.">
+  <p class="quiz-q">1. Dropout helps prevent overfitting by...</p>
+  <button class="quiz-opt" data-correct="true">randomly disabling neurons during training</button>
+  <button class="quiz-opt" data-correct="false">increasing learning rate</button>
+  <button class="quiz-opt" data-correct="false">removing all layers</button>
+  <button class="quiz-opt" data-correct="false">doubling batch size</button>
+  <p class="quiz-feedback" hidden></p>
+</div>
+
+<div class="source">
+  <span class="label">Primary source</span>
+  <a href="https://keras.io/api/layers/regularization_layers/dropout/">Keras Dropout</a> · <a href="https://www.tensorflow.org/tutorials/images/data_augmentation">Data Augmentation</a>
+</div>
+<div class="ask"><strong>Teacher here.</strong> Show your train/val curves and I'll diagnose.</div>
+<nav class="next">
+<a href="../index.html">← Course home</a>
+<a href="0011-convolution-and-cnn.html">← 11. Convolution &amp; CNN</a>
+<a href="0013-transfer-learning.html">13. Transfer learning →</a>
+</nav>
+</body>
+</html>

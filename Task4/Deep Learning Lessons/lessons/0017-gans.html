@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 17 — Generative Adversarial Networks</title>
+<link rel="stylesheet" href="../assets/course.css">
+<script src="../assets/quiz.js" defer></script>
+<script src="../assets/course-nav.js" defer></script>
+</head>
+<body>
+<p class="lesson-eyebrow">Lesson 17 · Deep Learning</p>
+<h1>Generative Adversarial Networks</h1>
+<p class="subtitle">The one skill: <em>understand the generator vs discriminator game.</em></p>
+
+<div class="objective">
+  <span class="label">By the end you can</span>
+  Explain adversarial training, min-max game, and why GANs generate data.
+</div>
+
+<h2>Idea</h2>
+<p>Two networks compete: <strong>Generator (G)</strong> tries to create fake data that look real; <strong>Discriminator (D)</strong> tries to tell real from fake.</p>
+
+<h2>Goal</h2>
+<p>G learns to fool D; D learns to not be fooled. At equilibrium, G produces data indistinguishable from real.</p>
+
+<h2>Training intuition</h2>
+<ol>
+  <li>Train D on real + fake data (binary classification)</li>
+  <li>Train G to make D classify fakes as real (by backpropagating through D)</li>
+  <li>Repeat</li>
+</ol>
+
+<h2>Applications</h2>
+<ul>
+  <li>Image generation, super-resolution</li>
+  <li>Style transfer</li>
+  <li>Data augmentation</li>
+</ul>
+
+<h2>Challenges</h2>
+<ul>
+  <li>Training instability</li>
+  <li>Mode collapse (G produces limited variety)</li>
+</ul>
+
+<h2>Quiz</h2>
+<div class="quiz" data-explain="Adversarial: G vs D in competition.">
+  <p class="quiz-q">1. The generator's goal is to...</p>
+  <button class="quiz-opt" data-correct="true">create fake data that fool the discriminator</button>
+  <button class="quiz-opt" data-correct="false">classify images</button>
+  <button class="quiz-opt" data-correct="false">compress data</button>
+  <button class="quiz-opt" data-correct="false">remove noise only</button>
+  <p class="quiz-feedback" hidden></p>
+</div>
+
+<div class="source">
+  <span class="label">Primary source</span>
+  <a href="https://arxiv.org/abs/1406.2661">Goodfellow et al. GAN paper</a> · <a href="https://developers.google.com/machine-learning/gan">Google ML GANs</a>
+</div>
+<div class="ask"><strong>Teacher here.</strong> Ask about mode collapse and I'll explain.</div>
+<nav class="next">
+<a href="../index.html">← Course home</a>
+<a href="0016-why-rnns-fail-lstm.html">← 16. LSTM/GRU</a>
+<a href="0018-transformers-attention.html">18. Transformers &amp; attention →</a>
+</nav>
+</body>
+</html>

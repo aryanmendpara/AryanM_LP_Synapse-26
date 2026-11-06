@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 8 — Judging a model honestly</title>
+<link rel="stylesheet" href="../assets/course.css">
+<script src="../assets/quiz.js" defer></script>
+<script src="../assets/course-nav.js" defer></script>
+</head>
+<body>
+<p class="lesson-eyebrow">Lesson 08 · Deep Learning</p>
+<h1>Judging a model honestly</h1>
+<p class="subtitle">The one skill: <em>beat a dumb baseline and look past accuracy.</em></p>
+
+<div class="objective">
+  <span class="label">By the end you can</span>
+  Compute/check a majority-class baseline, read confusion matrix, precision/recall, and spot class imbalance traps.
+</div>
+
+<h2>The trap of accuracy</h2>
+<p>If 90% of people earn &le;50K, a model that always predicts &le;50K gets 90% accuracy but learns nothing. Always compare to a <strong>baseline</strong> (majority class, random).</p>
+
+<h2>Confusion matrix (binary)</h2>
+<table>
+  <tr><th></th><th>Predicted +</th><th>Predicted -</th></tr>
+  <tr><th>Actual +</th><td>TP</td><td>FN</td></tr>
+  <tr><th>Actual -</th><td>FP</td><td>TN</td></tr>
+</table>
+<pre><code>Accuracy = (TP+TN)/(TP+TN+FP+FN)
+Precision = TP/(TP+FP)  # of predicted positives, how many correct?
+Recall = TP/(TP+FN)     # of actual positives, how many found?
+</code></pre>
+
+<h2>When to care</h2>
+<ul>
+  <li><strong>High precision:</strong> minimize false positives (spam filter - don't want to block legit mail)</li>
+  <li><strong>High recall:</strong> minimize false negatives (disease detection - don't want to miss sick patients)</li>
+</ul>
+
+<h2>Quiz</h2>
+<div class="quiz" data-explain="Majority class gives 90% here - model must beat that.">
+  <p class="quiz-q">1. If 90% are class 0, accuracy 90% means...</p>
+  <button class="quiz-opt" data-correct="true">it might just predict class 0 always</button>
+  <button class="quiz-opt" data-correct="false">it's perfect</button>
+  <button class="quiz-opt" data-correct="false">it's overfit</button>
+  <button class="quiz-opt" data-correct="false">needs more layers</button>
+  <p class="quiz-feedback" hidden></p>
+</div>
+
+<div class="source">
+  <span class="label">Primary source</span>
+  <a href="https://scikit-learn.org/stable/modules/model_evaluation.html">scikit-learn metrics</a>
+</div>
+<div class="ask"><strong>Teacher here.</strong> Share your confusion matrix and I'll interpret it.</div>
+<nav class="next">
+<a href="../index.html">← Course home</a>
+<a href="0007-keras-building-blocks-adult.html">← 7. Keras blocks</a>
+<a href="0009-tensors-autodiff.html">9. Tensors &amp; autodiff →</a>
+</nav>
+</body>
+</html>

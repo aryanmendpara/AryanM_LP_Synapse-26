@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 11 — Convolution &amp; the CNN</title>
+<link rel="stylesheet" href="../assets/course.css">
+<script src="../assets/quiz.js" defer></script>
+<script src="../assets/course-nav.js" defer></script>
+</head>
+<body>
+<p class="lesson-eyebrow">Lesson 11 · Deep Learning</p>
+<h1>Convolution &amp; the CNN</h1>
+<p class="subtitle">The one skill: <em>explain why CNNs beat ANNs for images.</em></p>
+
+<div class="objective">
+  <span class="label">By the end you can</span>
+  Describe filters/kernels, feature maps, convolution, pooling, weight sharing, and local connectivity.
+</div>
+
+<h2>Why not flatten to Dense?</h2>
+<p>Flattening a 32x32x3 image gives ~3072 inputs; a first Dense layer explodes in parameters. Also loses spatial structure (nearby pixels matter).</p>
+
+<h2>Convolution</h2>
+<p>Slide a small kernel (filter) over the image, compute dot product → produces a feature map. Kernel learns to detect edges/textures.</p>
+
+<h2>Key ideas</h2>
+<ul>
+  <li><strong>Local connectivity:</strong> Each neuron looks at small receptive field</li>
+  <li><strong>Weight sharing:</strong> Same kernel used across image → fewer params</li>
+  <li><strong>Translation equivariance:</strong> Detects features anywhere</li>
+</ul>
+
+<h2>Pooling</h2>
+<p>Reduce spatial size (max/average pooling) → fewer params, more robust to small shifts.</p>
+
+<h2>Typical CNN</h2>
+<pre><code>Conv2D(filters, kernel_size) -> ReLU -> MaxPooling2D
+-> Conv2D -> ReLU -> MaxPooling2D
+-> Flatten -> Dense -> Dense(softmax)
+</code></pre>
+
+<h2>Quiz</h2>
+<div class="quiz" data-explain="Weight sharing massively reduces parameters.">
+  <p class="quiz-q">1. Why are CNNs efficient for images?</p>
+  <button class="quiz-opt" data-correct="true">local connectivity and weight sharing</button>
+  <button class="quiz-opt" data-correct="false">they flatten everything</button>
+  <button class="quiz-opt" data-correct="false">use only bias</button>
+  <button class="quiz-opt" data-correct="false">no convolutions</button>
+  <p class="quiz-feedback" hidden></p>
+</div>
+
+<div class="source">
+  <span class="label">Primary source</span>
+  <a href="https://poloclub.github.io/cnn-explainer/">CNN Explainer</a> · <a href="http://cs231n.github.io/convolutional-networks/">CS231n CNNs</a>
+</div>
+<div class="ask"><strong>Teacher here.</strong> Play with CNN Explainer and ask questions.</div>
+<nav class="next">
+<a href="../index.html">← Course home</a>
+<a href="0010-what-hidden-layers-learn.html">← 10. Hidden layers</a>
+<a href="0012-training-cnn-overfitting.html">12. Training CNN &amp; overfitting →</a>
+</nav>
+</body>
+</html>

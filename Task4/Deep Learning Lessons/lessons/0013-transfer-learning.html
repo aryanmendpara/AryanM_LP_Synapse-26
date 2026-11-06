@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 13 — Transfer learning</title>
+<link rel="stylesheet" href="../assets/course.css">
+<script src="../assets/quiz.js" defer></script>
+<script src="../assets/course-nav.js" defer></script>
+</head>
+<body>
+<p class="lesson-eyebrow">Lesson 13 · Deep Learning</p>
+<h1>Transfer learning</h1>
+<p class="subtitle">The one skill: <em>reuse a pretrained model wisely.</em></p>
+
+<div class="objective">
+  <span class="label">By the end you can</span>
+  Explain feature extraction vs fine-tuning, freezing layers, and when to use them.
+</div>
+
+<h2>Idea</h2>
+<p>Take a model trained on large dataset (ImageNet) and adapt to your task. Leverages learned features.</p>
+
+<h2>Approaches</h2>
+<ul>
+  <li><strong>Feature extraction:</strong> Freeze base model, add new classifier head, train only head (fast, small data)</li>
+  <li><strong>Fine-tuning:</strong> Unfreeze some top layers of base + train head with very small learning rate (more data/similar domain)</li>
+</ul>
+
+<h2>Example (MobileNetV2)</h2>
+<pre><code>base = tf.keras.applications.MobileNetV2(input_shape=(224,224,3), include_top=False, weights='imagenet')
+base.trainable = False  # freeze
+model = Sequential([base, GlobalAveragePooling2D(), Dense(128,activation='relu'), Dense(num_classes,activation='softmax')])
+</code></pre>
+
+<h2>Quiz</h2>
+<div class="quiz" data-explain="Freeze when data small/domain different? Usually freeze base first.">
+  <p class="quiz-q">1. When should you freeze the base model?</p>
+  <button class="quiz-opt" data-correct="true">when you have small dataset or want to train quickly</button>
+  <button class="quiz-opt" data-correct="false">always unfreeze everything</button>
+  <button class="quiz-opt" data-correct="false">never freeze</button>
+  <button class="quiz-opt" data-correct="false">only on weekends</button>
+  <p class="quiz-feedback" hidden></p>
+</div>
+
+<div class="source">
+  <span class="label">Primary source</span>
+  <a href="https://keras.io/guides/transfer_learning/">Keras Transfer Learning Guide</a> · <a href="https://cs231n.github.io/transfer-learning/">CS231n Transfer Learning</a>
+</div>
+<div class="ask"><strong>Teacher here.</strong> Ask about fine-tuning strategy for your case.</div>
+<nav class="next">
+<a href="../index.html">← Course home</a>
+<a href="0012-training-cnn-overfitting.html">← 12. CNN training</a>
+<a href="0014-rnn-from-scratch-bptt.html">14. RNNs &amp; BPTT →</a>
+</nav>
+</body>
+</html>

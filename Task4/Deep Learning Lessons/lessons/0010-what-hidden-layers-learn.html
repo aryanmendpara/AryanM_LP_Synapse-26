@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 10 — What hidden layers learn</title>
+<link rel="stylesheet" href="../assets/course.css">
+<script src="../assets/quiz.js" defer></script>
+<script src="../assets/course-nav.js" defer></script>
+</head>
+<body>
+<p class="lesson-eyebrow">Lesson 10 · Deep Learning</p>
+<h1>What hidden layers learn</h1>
+<p class="subtitle">The one skill: <em>see how hidden layers build up features.</em></p>
+
+<div class="objective">
+  <span class="label">By the end you can</span>
+  Explain feature learning, why depth helps, and interpret the spiral/XOR examples.
+</div>
+
+<h2>Feature hierarchy</h2>
+<ul>
+  <li><strong>Early layers:</strong> simple features (edges, gradients)</li>
+  <li><strong>Middle layers:</strong> combinations (shapes, textures)</li>
+  <li><strong>Deep layers:</strong> complex concepts (objects, faces)</li>
+</ul>
+
+<h2>Why hidden layers work</h2>
+<p>Each layer transforms data; stacking nonlinear layers gives exponentially more expressive functions. This is why deep nets beat shallow ones on complex data.</p>
+
+<h2>Playground exercise</h2>
+<p>Go to <a href="https://playground.tensorflow.org/">TensorFlow Playground</a> and try the spiral dataset. Start with no hidden layers (fails), add layers/neurons until it separates. Watch decision boundaries become curved.</p>
+
+<h2>Quiz</h2>
+<div class="quiz" data-explain="Depth lets networks learn hierarchical features.">
+  <p class="quiz-q">1. Hidden layers learn...</p>
+  <button class="quiz-opt" data-correct="true">useful intermediate features automatically</button>
+  <button class="quiz-opt" data-correct="false">only random noise</button>
+  <button class="quiz-opt" data-correct="false">the same as input</button>
+  <button class="quiz-opt" data-correct="false">nothing</button>
+  <p class="quiz-feedback" hidden></p>
+</div>
+
+<div class="source">
+  <span class="label">Primary source</span>
+  <a href="https://playground.tensorflow.org/">TensorFlow Playground</a> · <a href="https://cs231n.github.io/understanding-cnn/">CS231n Feature Visualization</a>
+</div>
+<div class="ask"><strong>Teacher here.</strong> Share your Playground observations and I'll explain.</div>
+<nav class="next">
+<a href="../index.html">← Course home</a>
+<a href="0009-tensors-autodiff.html">← 9. Tensors &amp; autodiff</a>
+<a href="0011-convolution-and-cnn.html">11. Convolution &amp; CNN →</a>
+</nav>
+</body>
+</html>

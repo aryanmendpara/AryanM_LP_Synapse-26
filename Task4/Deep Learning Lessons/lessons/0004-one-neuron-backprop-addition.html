@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 4 — Backprop: one neuron learns addition</title>
+<link rel="stylesheet" href="../assets/course.css">
+<script src="../assets/quiz.js" defer></script>
+<script src="../assets/course-nav.js" defer></script>
+</head>
+<body>
+<p class="lesson-eyebrow">Lesson 04 · Deep Learning</p>
+<h1>Backprop: one neuron learns addition</h1>
+<p class="subtitle">The one skill: <em>do one forward + backward pass by hand for a single neuron.</em></p>
+
+<div class="objective">
+  <span class="label">By the end you can</span>
+  Compute prediction <code>ŷ = w1*x1 + w2*x2 + b</code>, MSE loss, derivatives <code>dL/dw, dL/db</code>, update with gradient descent, and explain why large inputs/weights can produce NaN.
+</div>
+
+<h2>Goal</h2>
+<p>Learn to add two numbers with a single neuron: no activation (linear) is natural here because we want the sum (unbounded). Start from random weights/bias, show the network the examples, correct it via gradient descent.</p>
+
+<h2>Forward pass</h2>
+<pre><code>z = w1*x1 + w2*x2 + b  (or np.dot(x, w) + b)
+ŷ = z  (identity/linear)</code></pre>
+
+<h2>Loss: Mean Squared Error</h2>
+<pre><code>L = (1/2)(y - ŷ)^2  (1/2 makes derivative clean)
+or L = (y - ŷ)^2 / n</code></pre>
+
+<h2>Backprop (chain rule)</h2>
+<p>We want <code>∂L/∂w</code>, <code>∂L/∂b</code>. Note <code>ŷ = z</code>.</p>
+<pre><code>∂L/∂ŷ = -(y - ŷ)
+∂ŷ/∂z = 1
+∂z/∂w1 = x1, ∂z/∂w2 = x2, ∂z/∂b = 1
+
+∂L/∂w1 = ∂L/∂ŷ * ∂ŷ/∂z * ∂z/∂w1 = -(y - ŷ) * x1
+∂L/∂b  = -(y - ŷ)
+</code></pre>
+<p>Gradient descent updates: <code>w ← w - η * ∂L/∂w</code>, <code>b ← b - η * ∂L/∂b</code>. With <code>∂L/∂w = -(y-ŷ)x</code> this becomes <code>w ← w + η (y-ŷ)x</code> — same form as the perceptron/delta rule but derived for MSE + linear output.</p>
+
+<div class="callout">
+  <span class="label">Connection</span> The delta rule is the gradient descent update for MSE on a linear unit.
+</div>
+
+<h2>Worked micro-example</h2>
+<p>Example: <code>x=[2,3], y=5</code>, init <code>w=[0.1,0.2], b=0</code>, <code>η=0.01</code></p>
+<ol>
+  <li>z = 0.1*2 + 0.2*3 + 0 = 0.2 + 0.6 = 0.8, ŷ=0.8</li>
+  <li>error = y-ŷ = 4.2, L=(1/2)(4.2)^2 large</li>
+  <li>∂L/∂w1 = -(4.2)*2 = -8.4 → w1 ← 0.1 - 0.01*(-8.4)=0.1+0.084=0.184</li>
+  <li>∂L/∂w2 = -(4.2)*3 = -12.6 → w2 ← 0.2+0.126=0.326</li>
+  <li>∂L/∂b  = -(4.2) → b ← 0+0.042=0.042</li>
+  <li>Next pass gives better ŷ; repeat until close.</li>
+</ol>
+<p>Ideally weights converge toward ~[1,1], bias toward ~0.</p>
+
+<h2>Why NaN on big numbers?</h2>
+<p>Two common causes:</p>
+<ul>
+  <li><strong>Large inputs:</strong> If x,big, initial weights random can produce huge z/ŷ; squared error explodes. Gradients <code>-(y-ŷ)x</code> become huge → weights/bias blow up → overflow to inf → NaN.</li>
+  <li><strong>Large learning rate:</strong> Overshoots badly, causes divergence.</li>
+</ul>
+<p><strong>Fixes:</strong> Normalize/scale inputs (e.g., divide by max), use smaller learning rate, or standardize. The model doesn't need huge values if inputs are scaled.</p>
+
+<h2>Implementation sketch (Task_4A style)</h2>
+<pre><code>import numpy as np
+
+class Add2NumsModel:
+    def __init__(self, num_inputs, lr):
+        self.w = np.random.randn(num_inputs)*0.01
+        self.b = np.random.randn(1)*0.01
+        self.lr = lr
+    def predict(self, x):
+        return np.dot(x, self.w) + self.b  # linear
+    def train(self, X,y,epochs):
+        for ep in range(epochs):
+            preds = np.dot(X,self.w)+self.b
+            err = y - preds  # shape (n,)
+            dW = -np.mean(err[:,None]*X, axis=0)  # MSE derivative form varies
+            # easier: use (y-ŷ) form: w += lr*(y-ŷ)*x
+            self.w += self.lr * np.dot(X.T, err)/len(X)
+            self.b += self.lr * np.mean(err)
+            if ep%100==0: print('mse', np.mean(err**2))
+</code></pre>
+<p>Note: be careful about shapes and sign conventions. The key is understanding the chain rule.</p>
+
+<h2>Recap</h2>
+<ul>
+  <li>Linear neuron + MSE gives delta rule form.</li>
+  <li>Backprop = chain rule down to weights/bias.</li>
+  <li>Scale inputs to avoid gradient explosion/NaN.</li>
+  <li>Weights converge to coefficients that approximate the function.</li>
+</ul>
+
+<h2>Quiz</h2>
+<div class="quiz" data-explain="dL/dw = -(y-ŷ)*x for linear unit with MSE.">
+  <p class="quiz-q">1. For MSE and linear ŷ=z, ∂L/∂w is proportional to...</p>
+  <button class="quiz-opt" data-correct="true">-(y - ŷ)*x</button>
+  <button class="quiz-opt" data-correct="false">(y+ŷ)*x</button>
+  <button class="quiz-opt" data-correct="false">sigmoid(z)</button>
+  <button class="quiz-opt" data-correct="false">only bias</button>
+  <p class="quiz-feedback" hidden></p>
+</div>
+<div class="quiz" data-explain="Big inputs produce huge gradients causing overflow.">
+  <p class="quiz-q">2. Training on very large numbers can give NaN because...</p>
+  <button class="quiz-opt" data-correct="true">gradients explode with large inputs/weights</button>
+  <button class="quiz-opt" data-correct="false">Python ints are slow</button>
+  <button class="quiz-opt" data-correct="false">bias can't be learned</button>
+  <button class="quiz-opt" data-correct="false">step function is used</button>
+  <p class="quiz-feedback" hidden></p>
+</div>
+
+<div class="source">
+  <span class="label">Primary source</span>
+  <a href="https://medium.com/@waadlingaadil/learn-to-build-a-neural-network-from-scratch-yes-really-cac4ca457efc">Waad Al-Humaimidi — Build NN from scratch</a> · <a href="https://www.3blue1brown.com/lessons/neural-networks">3Blue1Brown</a>
+</div>
+<div class="ask"><strong>Teacher here.</strong> Do one full forward+backward pass on paper for (1,1)->2 and ask me to check.</div>
+<nav class="next">
+<a href="../index.html">← Course home</a>
+<a href="0003-xor-linear-separability.html">← 3. XOR wall</a>
+<a href="0005-nn-from-scratch-mnist.html">5. MLP from scratch on MNIST →</a>
+</nav>
+</body>
+</html>

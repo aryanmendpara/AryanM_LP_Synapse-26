@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 7 — Keras building blocks (Adult Income)</title>
+<link rel="stylesheet" href="../assets/course.css">
+<script src="../assets/quiz.js" defer></script>
+<script src="../assets/course-nav.js" defer></script>
+</head>
+<body>
+<p class="lesson-eyebrow">Lesson 07 · Deep Learning</p>
+<h1>Keras building blocks (Adult Income)</h1>
+<p class="subtitle">The one skill: <em>build, compile, train, and evaluate a simple Keras model.</em></p>
+
+<div class="objective">
+  <span class="label">By the end you can</span>
+  Use <code>Sequential</code>, <code>Dense</code>, preprocess data for Keras, call <code>compile/fit/evaluate/predict</code>, and interpret results.
+</div>
+
+<h2>Key APIs</h2>
+<ul>
+  <li><strong>Sequential:</strong> Linear stack of layers</li>
+  <li><strong>Dense(units, activation=...):</strong> Fully connected layer</li>
+  <li><strong>compile(optimizer, loss, metrics):</strong> Configure training</li>
+  <li><strong>fit(X,y, epochs, batch_size, validation_split):</strong> Train</li>
+  <li><strong>evaluate(X,y):</strong> Test performance</li>
+  <li><strong>predict(X):</strong> Get predictions</li>
+</ul>
+
+<h2>Typical flow (Adult dataset)</h2>
+<pre><code>import tensorflow as tf
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense
+
+model = Sequential([
+  Dense(64, activation='relu', input_shape=(n_features,)),
+  Dense(32, activation='relu'),
+  Dense(1, activation='sigmoid')  # binary classification
+])
+
+model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+history = model.fit(X_train,y_train, epochs=50, batch_size=32, validation_split=0.2)
+loss, acc = model.evaluate(X_test,y_test)
+</code></pre>
+
+<h2>Preprocessing tips</h2>
+<ul>
+  <li>Handle categorical → one-hot/encoding</li>
+  <li>Scale numeric features (StandardScaler) for faster/stable training</li>
+  <li>Train/test split</li>
+</ul>
+
+<h2>Quiz</h2>
+<div class="quiz" data-explain="Sigmoid + binary_crossentropy for binary classification.">
+  <p class="quiz-q">1. For binary classification with single output, use...</p>
+  <button class="quiz-opt" data-correct="true">Dense(1, activation='sigmoid') + binary_crossentropy</button>
+  <button class="quiz-opt" data-correct="false">Dense(10, softmax) + mse</button>
+  <button class="quiz-opt" data-correct="false">relu on output</button>
+  <button class="quiz-opt" data-correct="false">no activation</button>
+  <p class="quiz-feedback" hidden></p>
+</div>
+
+<div class="source">
+  <span class="label">Primary source</span>
+  <a href="https://keras.io/api/models/sequential/">Keras Sequential API</a>
+</div>
+<div class="ask"><strong>Teacher here.</strong> Ask me to walk through your Adult preprocessing step by step.</div>
+<nav class="next">
+<a href="../index.html">← Course home</a>
+<a href="0006-debugging-training.html">← 6. Debugging</a>
+<a href="0008-judging-a-model-honestly.html">8. Judging models honestly →</a>
+</nav>
+</body>
+</html>

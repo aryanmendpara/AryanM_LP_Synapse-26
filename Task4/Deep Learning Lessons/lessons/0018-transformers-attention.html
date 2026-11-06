@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 18 — Transformers &amp; attention</title>
+<link rel="stylesheet" href="../assets/course.css">
+<script src="../assets/quiz.js" defer></script>
+<script src="../assets/course-nav.js" defer></script>
+</head>
+<body>
+<p class="lesson-eyebrow">Lesson 18 · Deep Learning</p>
+<h1>Transformers &amp; attention</h1>
+<p class="subtitle">The one skill: <em>understand self-attention and why "attention is all you need".</em></p>
+
+<div class="objective">
+  <span class="label">By the end you can</span>
+  Explain self-attention, Q/K/V, scaled dot-product attention, and why transformers replaced RNNs for many tasks.
+</div>
+
+<h2>Problem with RNNs</h2>
+<p>Sequential processing is slow; long-range dependencies still hard despite LSTMs. Can't parallelize well.</p>
+
+<h2>Attention idea</h2>
+<p>Instead of compressing everything into one hidden state, let each word "attend" to all other words in the sequence to decide what’s relevant.</p>
+
+<h2>Self-attention: Q, K, V</h2>
+<p>For each token, compute Query (Q), Key (K), Value (V). Attention weights come from similarity between Q and K.</p>
+<pre><code>Attention(Q,K,V) = softmax(QK^T / sqrt(d_k)) * V
+</code></pre>
+<p>Divide by <code>sqrt(d_k)</code> to stabilize gradients (especially for large d_k).</p>
+
+<h2>Why transformers?</h2>
+<ul>
+  <li><strong>Parallelizable:</strong> Process all tokens at once</li>
+  <li><strong>Long-range:</strong> Direct connections between any positions</li>
+  <li><strong>Scalable:</strong> Foundation for LLMs (BERT, GPT)</li>
+</ul>
+
+<h2>Key paper</h2>
+<p><a href="https://arxiv.org/pdf/1706.03762">Vaswani et al., "Attention Is All You Need" (2017)</a> — read the abstract/introduction first.</p>
+
+<h2>Quiz</h2>
+<div class="quiz" data-explain="QK^T gives similarity scores.">
+  <p class="quiz-q">1. In self-attention, attention weights come from...</p>
+  <button class="quiz-opt" data-correct="true">similarity between queries and keys (scaled dot-product)</button>
+  <button class="quiz-opt" data-correct="false">convolution filters</button>
+  <button class="quiz-opt" data-correct="false">pooling</button>
+  <button class="quiz-opt" data-correct="false">dropout masks</button>
+  <p class="quiz-feedback" hidden></p>
+</div>
+<div class="quiz" data-explain="sqrt(d_k) prevents large dot products.">
+  <p class="quiz-q">2. Why divide by sqrt(d_k)?</p>
+  <button class="quiz-opt" data-correct="true">to scale down large values and stabilize softmax/gradients</button>
+  <button class="quiz-opt" data-correct="false">to make it slower</button>
+  <button class="quiz-opt" data-correct="false">to add noise</button>
+  <button class="quiz-opt" data-correct="false">no reason</button>
+  <p class="quiz-feedback" hidden></p>
+</div>
+
+<div class="source">
+  <span class="label">Primary source</span>
+  <a href="https://arxiv.org/pdf/1706.03762">Attention Is All You Need (Vaswani et al.)</a> · <a href="https://jalammar.github.io/illustrated-transformer/">The Illustrated Transformer</a>
+</div>
+<div class="ask"><strong>Teacher here.</strong> Read the Illustrated Transformer and ask me anything.</div>
+<nav class="next">
+<a href="../index.html">← Course home</a>
+<a href="0017-gans.html">← 17. GANs</a>
+<a href="../index.html">Back to course home →</a>
+</nav>
+</body>
+</html>

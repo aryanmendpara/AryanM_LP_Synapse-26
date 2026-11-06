@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 14 — RNNs from scratch &amp; BPTT</title>
+<link rel="stylesheet" href="../assets/course.css">
+<script src="../assets/quiz.js" defer></script>
+<script src="../assets/course-nav.js" defer></script>
+</head>
+<body>
+<p class="lesson-eyebrow">Lesson 14 · Deep Learning</p>
+<h1>RNNs from scratch &amp; BPTT</h1>
+<p class="subtitle">The one skill: <em>understand hidden state and backprop through time.</em></p>
+
+<div class="objective">
+  <span class="label">By the end you can</span>
+  Explain recurrence, shared weights, hidden state, and the idea of BPTT.
+</div>
+
+<h2>Why RNNs?</h2>
+<p>Sequential data (text, time series) where order matters. RNNs have memory via hidden state carried across time steps.</p>
+
+<h2>Equations (simple RNN)</h2>
+<pre><code>h_t = tanh(W_hh * h_{t-1} + W_xh * x_t + b_h)
+y_t = W_hy * h_t + b_y
+</code></pre>
+<p>Weights <code>W_hh, W_xh, W_hy</code> are <strong>shared</strong> across all time steps.</p>
+
+<h2>Backpropagation Through Time (BPTT)</h2>
+<p>Unroll the RNN over time steps (like a deep network) and backpropagate errors backwards through time steps, summing gradients for shared weights.</p>
+
+<h2>Vanishing/exploding gradients</h2>
+<p>Multiplying by same weights repeatedly over long sequences causes gradients to shrink to 0 (vanish) or blow up (explode) — hard to learn long-range dependencies.</p>
+
+<h2>Quiz</h2>
+<div class="quiz" data-explain="Hidden state carries information across time.">
+  <p class="quiz-q">1. What gives RNNs memory?</p>
+  <button class="quiz-opt" data-correct="true">hidden state passed from previous time step</button>
+  <button class="quiz-opt" data-correct="false">larger batch size</button>
+  <button class="quiz-opt" data-correct="false">more filters</button>
+  <button class="quiz-opt" data-correct="false">dropout only</button>
+  <p class="quiz-feedback" hidden></p>
+</div>
+
+<div class="source">
+  <span class="label">Primary source</span>
+  <a href="https://colah.github.io/posts/2015-08-Understanding-LSTMs/">Christopher Olah — Understanding LSTMs</a> · <a href="https://medium.com/@maheksanghvi2006/backpropagation-through-time-isnt-complicated-until-it-is-4fb2ebf55d61">BPTT explained</a>
+</div>
+<div class="ask"><strong>Teacher here.</strong> Ask about BPTT unrolling and I'll draw mentally.</div>
+<nav class="next">
+<a href="../index.html">← Course home</a>
+<a href="0013-transfer-learning.html">← 13. Transfer learning</a>
+<a href="0015-keras-rnn-imdb.html">15. RNNs in Keras (IMDB) →</a>
+</nav>
+</body>
+</html>

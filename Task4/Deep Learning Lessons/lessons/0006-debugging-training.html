@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 6 — Debugging training</title>
+<link rel="stylesheet" href="../assets/course.css">
+<script src="../assets/quiz.js" defer></script>
+<script src="../assets/course-nav.js" defer></script>
+</head>
+<body>
+<p class="lesson-eyebrow">Lesson 06 · Deep Learning</p>
+<h1>Debugging training</h1>
+<p class="subtitle">The one skill: <em>diagnose common training failures from symptoms.</em></p>
+
+<div class="objective">
+  <span class="label">By the end you can</span>
+  Spot problems from loss/accuracy curves and fix init, learning rate, scaling issues.
+</div>
+
+<h2>Common issues</h2>
+<table>
+  <tr><th>Symptom</th><th>Likely cause</th><th>Fix</th></tr>
+  <tr><td>Loss stays flat / accuracy ~random</td><td>Bad init (all zeros), very small LR, or dead activations</td><td>Random init (small), check shapes, try larger LR</td></tr>
+  <tr><td>Loss explodes to inf/NaN</td><td>LR too big, large unscaled inputs, exploding gradients</td><td>Smaller LR, normalize/scale, gradient clipping (later)</td></tr>
+  <tr><td>Loss decreases then jumps up</td><td>LR too high (oscillation)</td><td>Lower LR or learning rate schedule</td></tr>
+  <tr><td>Train acc high, val/test much lower</td><td>Overfitting</td><td>More data, dropout, regularization, early stopping</td></tr>
+  <tr><td>Both train and val bad</td><td>Underfitting (model too simple)</td><td>Bigger model, more features, train longer</td></tr>
+</table>
+
+<h2>Initialization</h2>
+<p><strong>Don't init all weights to zero.</strong> All neurons compute same thing, get same gradients, stay identical (symmetry). Use small random values: <code>np.random.randn(...) * 0.01</code>.</p>
+
+<h2>Learning rate</h2>
+<ul>
+  <li><strong>Too small:</strong> painfully slow, might get stuck</li>
+  <li><strong>Just right:</strong> smooth loss decrease</li>
+  <li><strong>Too large:</strong> diverges, oscillates</li>
+</ul>
+
+<h2>Reading curves</h2>
+<p>Plot loss vs epochs: healthy training goes down smoothly. Spikes mean LR too big. Flatline means stuck.</p>
+
+<h2>Quiz</h2>
+<div class="quiz" data-explain="All-zero weights create symmetry.">
+  <p class="quiz-q">1. Why is zero initialization bad?</p>
+  <button class="quiz-opt" data-correct="true">all neurons update identically (symmetry)</button>
+  <button class="quiz-opt" data-correct="false">it makes matrix multiply faster</button>
+  <button class="quiz-opt" data-correct="false">it enables dropout</button>
+  <button class="quiz-opt" data-correct="false">it prevents NaN</button>
+  <p class="quiz-feedback" hidden></p>
+</div>
+
+<div class="source">
+  <span class="label">Primary source</span>
+  <a href="https://cs231n.github.io/neural-networks-3/">CS231n - Training Neural Nets</a>
+</div>
+<div class="ask"><strong>Teacher here.</strong> Show me a loss curve description and I'll diagnose.</div>
+<nav class="next">
+<a href="../index.html">← Course home</a>
+<a href="0005-nn-from-scratch-mnist.html">← 5. MNIST from scratch</a>
+<a href="0007-keras-building-blocks-adult.html">7. Keras building blocks →</a>
+</nav>
+</body>
+</html>
